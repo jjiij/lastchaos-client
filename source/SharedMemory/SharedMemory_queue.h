@@ -4,7 +4,11 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#ifdef _WIN32
 #include <windows.h>
+#else
+typedef void* HANDLE;
+#endif
 
 typedef HANDLE shared_memory_t;
 
