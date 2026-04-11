@@ -16,6 +16,11 @@ Output location (default):
 ## Code signing (local)
 
 After the bundle is assembled, `sign_macos_app_bundle` runs **`codesign`** on macOS so Finder and Gatekeeper are less likely to block launch.
+`package_full_macos_app.sh` also prints a post-package verification summary:
+
+- `codesign --verify --verbose=2 LastChaos.app`
+- `codesign --display --verbose=2 LastChaos.app`
+- `spctl --assess --type execute --verbose=4 LastChaos.app` (when `spctl` is available)
 
 | Variable | Default | Meaning |
 |----------|---------|---------|
@@ -64,6 +69,24 @@ macOS does not ship one monolithic “exe”; the standard pattern is a **`.dmg`
 ```
 
 produces `build/macos/LastChaos.dmg` by default.
+
+## Cross-platform non-regression checklist (macOS porting PRs)
+
+Run these commands in addition to macOS packaging checks so Windows/Linux baselines stay visible while macOS work continues:
+
+### Linux x64 probe build
+
+```bash
+cmake -S . -B build/linux -G "Unix Makefiles"
+cmake --build build/linux --target lastchaos_porting_probe -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)"
+```
+
+### Windows x64 baseline build (from Windows host/runner)
+
+```powershell
+cmake -S . -B build\win64 -G "Visual Studio 17 2022" -A x64
+cmake --build build\win64 --config Release --target GameMP
+```
 
 ## Double-click opens Terminal
 

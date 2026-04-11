@@ -57,6 +57,7 @@ install_sl_dta_for_bundle "${APP_DIR}" "${BUILD_DIR}/porting/sl.dta"
 install_macos_vulkan_runtime_if_available "${APP_DIR}" "${LASTCHAOS_MOLTENVK_DYLIB:-}"
 
 sign_macos_app_bundle "${APP_DIR}"
+verify_macos_app_bundle_security "${APP_DIR}"
 
 cat <<EOF
 Created playable app bundle:
@@ -74,6 +75,11 @@ ${APP_DIR}/Contents/Resources/Game/sl.dta
 
 Bundled Vulkan runtime (if found/provided):
 ${APP_DIR}/Contents/Frameworks/libvulkan.1.dylib
+
+Bundle verification:
+codesign --verify --verbose=2 ${APP_DIR}
+codesign --display --verbose=2 ${APP_DIR}
+spctl --assess --type execute --verbose=4 ${APP_DIR}   (when available)
 
 Login endpoint entry:
 ${LC_LOGIN_NAME} ${LC_LOGIN_HOST}:${LC_LOGIN_PORT} (ver=${LC_LOGIN_VERSION}, users=${LC_LOGIN_USERS})

@@ -183,3 +183,35 @@ sign_macos_app_bundle() {
 
   codesign --verify --verbose=2 "${app_dir}" 2>/dev/null || codesign --verify "${app_dir}"
 }
+
+# Print post-package signing/Gatekeeper diagnostics.
+# - codesign verification is required on macOS and will fail this function if invalid.
+# - spctl assessment is optional and reported when available.
+verify_macos_app_bundle_security() {
+  local app_dir="$1"
+
+  if [[ "$(uname -s)" != "Darwin" ]]; then
+    echo "verify_macos_app_bundle_security: not macOS, skipping bundle security checks"
+    return 0
+  fi
+
+  if ! command -v codesign >/dev/null 2>&1; then
+    echo "verify_macos_app_bundle_security: codesign not in PATH, skipping" >&2
+    return 0
+  fi
+
+  echo "verify_macos_app_bundle_security: codesign --verify --verbose=2"
+  codesign --verify --verbose=2 "${app_dir}"
+
+  echo "verify_macos_app_bundle_security: codesign --display --verbose=2"
+  codesign --display --verbose=2 "${app_dir}" 2>&1 | sed 's/^/  /'
+
+  if command -v spctl >/dev/null 2>&1; then
+    echo "verify_macos_app_bundle_security: spctl --assess --type execute --verbose=4"
+    if ! spctl --assess --type execute --verbose=4 "${app_dir}" 2>&1 | sed 's/^/  /'; then
+      echo "verify_macos_app_bundle_security: spctl assess reported non-accept (informational)." >&2
+    fi
+  else
+    echo "verify_macos_app_bundle_security: spctl not in PATH, skipping Gatekeeper assessment"
+  fi
+}
