@@ -83,6 +83,7 @@ Date: 2026-04-11
 - Next phase is wiring actual engine/object libraries instead of relying on dynamic unresolved lookup.
 
 2. `SharedMemory/Ext_ipc_event.h` and other IPC/process-launch code paths are still Windows-specific and require non-Windows stubs or compile-time exclusion.
+   - Update (2026-04-11): `Ext_ipc_event` and `SharedMemory_queue` now have non-Windows fallback implementations to unblock compilation and basic in-process IPC event flow; cross-process parity still pending.
 
 3. Temporary stubs in `EntitiesMP/` and Win headers are only for compile progression; real generated/script outputs are still required for a fully functional game client.
 

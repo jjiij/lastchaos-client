@@ -45,6 +45,15 @@ Login servers are read from `sl.dta` next to that game data (engine uses `_fnmAp
 
 - `LASTCHAOS_CLIENT_BINARY` — path to the native macOS game executable  
 - `LASTCHAOS_ASSET_ROOT` — directory whose contents include `Data/` (maps, textures, etc.)
+- `LASTCHAOS_MACOS_ARCHS` — CMake `CMAKE_OSX_ARCHITECTURES` value (default: `x86_64;arm64`)
+
+### Universal binary checks (`build_full_macos_app.sh`)
+
+- `build_full_macos_app.sh` validates `LASTCHAOS_CLIENT_BINARY` architectures with `lipo` when available.
+- Default required architecture list is `x86_64;arm64`.
+- Override with:
+  - `LASTCHAOS_EXPECT_CLIENT_ARCHS` (explicit required list), or
+  - `LASTCHAOS_MACOS_ARCHS` (used as fallback expected list).
 
 ### Single downloadable file
 
