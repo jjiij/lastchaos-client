@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <ItemGroup>
+    <ClCompile Include="vulkan_loader.cpp" />
+    <ClCompile Include="vulkan_names.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\src\vulkan\meson.build" />
+  </ItemGroup>
+</Project>

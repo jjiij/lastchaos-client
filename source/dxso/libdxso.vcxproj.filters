@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <ItemGroup>
+    <ClCompile Include="dxso_analysis.cpp" />
+    <ClCompile Include="dxso_code.cpp" />
+    <ClCompile Include="dxso_common.cpp" />
+    <ClCompile Include="dxso_compiler.cpp" />
+    <ClCompile Include="dxso_ctab.cpp" />
+    <ClCompile Include="dxso_decoder.cpp" />
+    <ClCompile Include="dxso_enums.cpp" />
+    <ClCompile Include="dxso_header.cpp" />
+    <ClCompile Include="dxso_module.cpp" />
+    <ClCompile Include="dxso_options.cpp" />
+    <ClCompile Include="dxso_reader.cpp" />
+    <ClCompile Include="dxso_tables.cpp" />
+    <ClCompile Include="dxso_util.cpp" />
+  </ItemGroup>
+</Project>

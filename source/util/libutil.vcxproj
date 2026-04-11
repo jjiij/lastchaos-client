@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug|Win32">
+      <Configuration>debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="LCRelease|Win32">
+      <Configuration>LCRelease</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="LCRelease|x64">
+      <Configuration>LCRelease</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|Win32">
+      <Configuration>release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release|x64">
+      <Configuration>release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="debug|x64">
+      <Configuration>debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{13DBD76E-B0CD-4299-BAD1-B221CA278034}</ProjectGuid>
+    <Keyword>x64Proj</Keyword>
+    <ProjectName>libutil</ProjectName>
+    <RootNamespace>libutil</RootNamespace>
+    <Platform>x64</Platform>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <UseMultiToolTask>true</UseMultiToolTask>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <UseOfMfc>false</UseOfMfc>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir>.\Release\</OutDir>
+    <IntDir>.\Release\</IntDir>
+    <TargetName>libutil</TargetName>
+    <TargetExt>.a</TargetExt>
+    <EmbedManifest>false</EmbedManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
+    <IncludePath>$(SolutionDir)util;$(SolutionDir)External\include;$(SolutionDir)External\Include\vulkan\include;$(SolutionDir)External\Include\spirv\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|Win32'">
+    <IncludePath>$(SolutionDir)util;$(SolutionDir)External\include;$(SolutionDir)External\Include\vulkan\include;$(SolutionDir)External\Include\spirv\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
+    <IncludePath>$(SolutionDir)util;$(SolutionDir)External\include;$(SolutionDir)External\Include\vulkan\include;$(SolutionDir)External\Include\spirv\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|Win32'">
+    <IncludePath>$(SolutionDir)util;$(SolutionDir)External\include;$(SolutionDir)External\Include\vulkan\include;$(SolutionDir)External\Include\spirv\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='LCRelease|x64'">
+    <IncludePath>$(SolutionDir);$(SolutionDir)util;$(SolutionDir)External\include;$(SolutionDir)External\Include\vulkan\include;$(SolutionDir)External\Include\spirv\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='LCRelease|Win32'">
+    <IncludePath>$(SolutionDir);$(SolutionDir)util;$(SolutionDir)External\include;$(SolutionDir)External\Include\vulkan\include;$(SolutionDir)External\Include\spirv\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <DebugInformationFormat>None</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <AdditionalOptions>/Gw %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='LCRelease|x64'">4996;4244;4267;</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='LCRelease|Win32'">4996;4244;4267;</DisableSpecificWarnings>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions />
+    </ResourceCompile>
+    <Link>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <AdditionalOptions>/OPT:REF %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)libutil.a</OutputFile>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX64</TargetMachine>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <SetChecksum>true</SetChecksum>
+    </Link>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='LCRelease|Win32'">copy Release\$(TargetName).a $(SolutionDir)..\Bin\ &gt;nul</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='LCRelease|x64'">copy Release\$(TargetName).a $(SolutionDir)..\Bin\ &gt;nul</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="com\com_guid.cpp" />
+    <ClCompile Include="com\com_private_data.cpp" />
+    <ClCompile Include="config\config.cpp" />
+    <ClCompile Include="log\log.cpp" />
+    <ClCompile Include="log\log_debug.cpp" />
+    <ClCompile Include="sha1\sha1.c" />
+    <ClCompile Include="sha1\sha1_util.cpp" />
+    <ClCompile Include="sync\sync_recursive.cpp" />
+    <ClCompile Include="thread.cpp" />
+    <ClCompile Include="util_env.cpp" />
+    <ClCompile Include="util_flush.cpp" />
+    <ClCompile Include="util_fps_limiter.cpp" />
+    <ClCompile Include="util_gdi.cpp" />
+    <ClCompile Include="util_luid.cpp" />
+    <ClCompile Include="util_matrix.cpp" />
+    <ClCompile Include="util_shared_res.cpp" />
+    <ClCompile Include="util_sleep.cpp" />
+    <ClCompile Include="util_string.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

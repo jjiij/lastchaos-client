@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <ItemGroup>
+    <ClCompile Include="cta.c" />
+    <ClCompile Include="displayid.c" />
+    <ClCompile Include="dmt-table.c" />
+    <ClCompile Include="edid.c" />
+    <ClCompile Include="gtf.c" />
+    <ClCompile Include="info.c" />
+    <ClCompile Include="log.c" />
+    <ClCompile Include="memory-stream.c" />
+    <ClCompile Include="pnp-id-table.c" />
+  </ItemGroup>
+</Project>

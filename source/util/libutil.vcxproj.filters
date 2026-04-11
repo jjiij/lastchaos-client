@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <ItemGroup>
+    <Filter Include="com">
+      <UniqueIdentifier>{9A71AA5D-0A7F-4E68-83A1-B66DA4DB4776}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="config">
+      <UniqueIdentifier>{755873B7-740A-49F5-8E88-C0E4B739B8E2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="log">
+      <UniqueIdentifier>{4D62944F-A962-464B-A5F1-1FB74C241792}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sha1">
+      <UniqueIdentifier>{785F4059-A044-49C6-87A9-BA84D976ECD5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sync">
+      <UniqueIdentifier>{0991DAC1-D7BC-4B1A-B761-1D3A22E52DBD}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="com\com_guid.cpp">
+      <Filter>com</Filter>
+    </ClCompile>
+    <ClCompile Include="com\com_private_data.cpp">
+      <Filter>com</Filter>
+    </ClCompile>
+    <ClCompile Include="config\config.cpp">
+      <Filter>config</Filter>
+    </ClCompile>
+    <ClCompile Include="log\log.cpp">
+      <Filter>log</Filter>
+    </ClCompile>
+    <ClCompile Include="log\log_debug.cpp">
+      <Filter>log</Filter>
+    </ClCompile>
+    <ClCompile Include="sha1\sha1.c">
+      <Filter>sha1</Filter>
+    </ClCompile>
+    <ClCompile Include="sha1\sha1_util.cpp">
+      <Filter>sha1</Filter>
+    </ClCompile>
+    <ClCompile Include="sync\sync_recursive.cpp">
+      <Filter>sync</Filter>
+    </ClCompile>
+    <ClCompile Include="util_string.cpp" />
+    <ClCompile Include="util_sleep.cpp" />
+    <ClCompile Include="util_shared_res.cpp" />
+    <ClCompile Include="util_matrix.cpp" />
+    <ClCompile Include="util_luid.cpp" />
+    <ClCompile Include="util_gdi.cpp" />
+    <ClCompile Include="util_fps_limiter.cpp" />
+    <ClCompile Include="util_flush.cpp" />
+    <ClCompile Include="util_env.cpp" />
+    <ClCompile Include="thread.cpp" />
+  </ItemGroup>
+</Project>

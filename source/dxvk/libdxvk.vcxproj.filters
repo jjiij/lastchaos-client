@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <ItemGroup>
+    <Filter Include="hud">
+      <UniqueIdentifier>{33BAB9D8-96EC-49B3-AD5E-C5D270605C1C}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="hud\dxvk_hud.cpp">
+      <Filter>hud</Filter>
+    </ClCompile>
+    <ClCompile Include="hud\dxvk_hud_font.cpp">
+      <Filter>hud</Filter>
+    </ClCompile>
+    <ClCompile Include="hud\dxvk_hud_item.cpp">
+      <Filter>hud</Filter>
+    </ClCompile>
+    <ClCompile Include="hud\dxvk_hud_renderer.cpp">
+      <Filter>hud</Filter>
+    </ClCompile>
+    <ClCompile Include="dxvk_access.cpp" />
+    <ClCompile Include="dxvk_adapter.cpp" />
+    <ClCompile Include="dxvk_allocator.cpp" />
+    <ClCompile Include="dxvk_barrier.cpp" />
+    <ClCompile Include="dxvk_buffer.cpp" />
+    <ClCompile Include="dxvk_cmdlist.cpp" />
+    <ClCompile Include="dxvk_compute.cpp" />
+    <ClCompile Include="dxvk_context.cpp" />
+    <ClCompile Include="dxvk_cs.cpp" />
+    <ClCompile Include="dxvk_descriptor.cpp" />
+    <ClCompile Include="dxvk_device.cpp" />
+    <ClCompile Include="dxvk_device_filter.cpp" />
+    <ClCompile Include="dxvk_extensions.cpp" />
+    <ClCompile Include="dxvk_fence.cpp" />
+    <ClCompile Include="dxvk_format.cpp" />
+    <ClCompile Include="dxvk_framebuffer.cpp" />
+    <ClCompile Include="dxvk_gpu_event.cpp" />
+    <ClCompile Include="dxvk_gpu_query.cpp" />
+    <ClCompile Include="dxvk_graphics.cpp" />
+    <ClCompile Include="dxvk_image.cpp" />
+    <ClCompile Include="dxvk_instance.cpp" />
+    <ClCompile Include="dxvk_latency_builtin.cpp" />
+    <ClCompile Include="dxvk_latency_reflex.cpp" />
+    <ClCompile Include="dxvk_memory.cpp" />
+    <ClCompile Include="dxvk_meta_blit.cpp" />
+    <ClCompile Include="dxvk_meta_clear.cpp" />
+    <ClCompile Include="dxvk_meta_copy.cpp" />
+    <ClCompile Include="dxvk_meta_mipgen.cpp" />
+    <ClCompile Include="dxvk_meta_resolve.cpp" />
+    <ClCompile Include="dxvk_openvr.cpp" />
+    <ClCompile Include="dxvk_openxr.cpp" />
+    <ClCompile Include="dxvk_options.cpp" />
+    <ClCompile Include="dxvk_pipelayout.cpp" />
+    <ClCompile Include="dxvk_pipemanager.cpp" />
+    <ClCompile Include="dxvk_platform_exts.cpp" />
+    <ClCompile Include="dxvk_presenter.cpp" />
+    <ClCompile Include="dxvk_queue.cpp" />
+    <ClCompile Include="dxvk_sampler.cpp" />
+    <ClCompile Include="dxvk_shader.cpp" />
+    <ClCompile Include="dxvk_shader_key.cpp" />
+    <ClCompile Include="dxvk_signal.cpp" />
+    <ClCompile Include="dxvk_sparse.cpp" />
+    <ClCompile Include="dxvk_staging.cpp" />
+    <ClCompile Include="dxvk_state_cache.cpp" />
+    <ClCompile Include="dxvk_stats.cpp" />
+    <ClCompile Include="dxvk_swapchain_blitter.cpp" />
+    <ClCompile Include="dxvk_unbound.cpp" />
+    <ClCompile Include="dxvk_util.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\dxvk_blit_frag_1d.h" />
+    <ClInclude Include="include\dxvk_blit_frag_2d.h" />
+    <ClInclude Include="include\dxvk_blit_frag_3d.h" />
+    <ClInclude Include="include\dxvk_buffer_to_image_d.h" />
+    <ClInclude Include="include\dxvk_buffer_to_image_ds_export.h" />
+    <ClInclude Include="include\dxvk_buffer_to_image_s_discard.h" />
+    <ClInclude Include="include\dxvk_clear_buffer_f.h" />
+    <ClInclude Include="include\dxvk_clear_buffer_u.h" />
+    <ClInclude Include="include\dxvk_clear_image1d_f.h" />
+    <ClInclude Include="include\dxvk_clear_image1d_u.h" />
+    <ClInclude Include="include\dxvk_clear_image1darr_f.h" />
+    <ClInclude Include="include\dxvk_clear_image1darr_u.h" />
+    <ClInclude Include="include\dxvk_clear_image2d_f.h" />
+    <ClInclude Include="include\dxvk_clear_image2d_u.h" />
+    <ClInclude Include="include\dxvk_clear_image2darr_f.h" />
+    <ClInclude Include="include\dxvk_clear_image2darr_u.h" />
+    <ClInclude Include="include\dxvk_clear_image3d_f.h" />
+    <ClInclude Include="include\dxvk_clear_image3d_u.h" />
+    <ClInclude Include="include\dxvk_copy_buffer_image.h" />
+    <ClInclude Include="include\dxvk_copy_color_1d.h" />
+    <ClInclude Include="include\dxvk_copy_color_2d.h" />
+    <ClInclude Include="include\dxvk_copy_color_ms.h" />
+    <ClInclude Include="include\dxvk_copy_depth_stencil_1d.h" />
+    <ClInclude Include="include\dxvk_copy_depth_stencil_2d.h" />
+    <ClInclude Include="include\dxvk_copy_depth_stencil_ms.h" />
+    <ClInclude Include="include\dxvk_cursor_frag.h" />
+    <ClInclude Include="include\dxvk_cursor_vert.h" />
+    <ClInclude Include="include\dxvk_dummy_frag.h" />
+    <ClInclude Include="include\dxvk_fullscreen_geom.h" />
+    <ClInclude Include="include\dxvk_fullscreen_layer_vert.h" />
+    <ClInclude Include="include\dxvk_fullscreen_vert.h" />
+    <ClInclude Include="include\dxvk_image_to_buffer_ds.h" />
+    <ClInclude Include="include\dxvk_image_to_buffer_f.h" />
+    <ClInclude Include="include\dxvk_present_frag.h" />
+    <ClInclude Include="include\dxvk_present_frag_blit.h" />
+    <ClInclude Include="include\dxvk_present_frag_ms.h" />
+    <ClInclude Include="include\dxvk_present_frag_ms_amd.h" />
+    <ClInclude Include="include\dxvk_present_frag_ms_blit.h" />
+    <ClInclude Include="include\dxvk_present_vert.h" />
+    <ClInclude Include="include\dxvk_resolve_frag_d.h" />
+    <ClInclude Include="include\dxvk_resolve_frag_ds.h" />
+    <ClInclude Include="include\dxvk_resolve_frag_f.h" />
+    <ClInclude Include="include\dxvk_resolve_frag_f_amd.h" />
+    <ClInclude Include="include\dxvk_resolve_frag_i.h" />
+    <ClInclude Include="include\dxvk_resolve_frag_u.h" />
+    <ClInclude Include="include\hud_chunk_frag_background.h" />
+    <ClInclude Include="include\hud_chunk_frag_visualize.h" />
+    <ClInclude Include="include\hud_chunk_vert_background.h" />
+    <ClInclude Include="include\hud_chunk_vert_visualize.h" />
+    <ClInclude Include="include\hud_frame_time_eval.h" />
+    <ClInclude Include="include\hud_graph_frag.h" />
+    <ClInclude Include="include\hud_graph_vert.h" />
+    <ClInclude Include="include\hud_text_frag.h" />
+    <ClInclude Include="include\hud_text_vert.h" />
+    <ClInclude Include="version.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\dxvk_blit_frag_1d.frag" />
+    <None Include="shaders\dxvk_blit_frag_2d.frag" />
+    <None Include="shaders\dxvk_blit_frag_3d.frag" />
+    <None Include="shaders\dxvk_buffer_to_image_d.frag" />
+    <None Include="shaders\dxvk_buffer_to_image_ds_export.frag" />
+    <None Include="shaders\dxvk_buffer_to_image_s_discard.frag" />
+    <None Include="shaders\dxvk_clear_buffer_f.comp" />
+    <None Include="shaders\dxvk_clear_buffer_u.comp" />
+    <None Include="shaders\dxvk_clear_image1d_f.comp" />
+    <None Include="shaders\dxvk_clear_image1d_u.comp" />
+    <None Include="shaders\dxvk_clear_image1darr_f.comp" />
+    <None Include="shaders\dxvk_clear_image1darr_u.comp" />
+    <None Include="shaders\dxvk_clear_image2d_f.comp" />
+    <None Include="shaders\dxvk_clear_image2d_u.comp" />
+    <None Include="shaders\dxvk_clear_image2darr_f.comp" />
+    <None Include="shaders\dxvk_clear_image2darr_u.comp" />
+    <None Include="shaders\dxvk_clear_image3d_f.comp" />
+    <None Include="shaders\dxvk_clear_image3d_u.comp" />
+    <None Include="shaders\dxvk_color_space.glsl" />
+    <None Include="shaders\dxvk_copy_buffer_image.comp" />
+    <None Include="shaders\dxvk_copy_color_1d.frag" />
+    <None Include="shaders\dxvk_copy_color_2d.frag" />
+    <None Include="shaders\dxvk_copy_color_ms.frag" />
+    <None Include="shaders\dxvk_copy_depth_stencil_1d.frag" />
+    <None Include="shaders\dxvk_copy_depth_stencil_2d.frag" />
+    <None Include="shaders\dxvk_copy_depth_stencil_ms.frag" />
+    <None Include="shaders\dxvk_cursor_frag.frag" />
+    <None Include="shaders\dxvk_cursor_vert.vert" />
+    <None Include="shaders\dxvk_dummy_frag.frag" />
+    <None Include="shaders\dxvk_formats.glsl" />
+    <None Include="shaders\dxvk_fullscreen_geom.geom" />
+    <None Include="shaders\dxvk_fullscreen_layer_vert.vert" />
+    <None Include="shaders\dxvk_fullscreen_vert.vert" />
+    <None Include="shaders\dxvk_image_to_buffer_ds.comp" />
+    <None Include="shaders\dxvk_image_to_buffer_f.comp" />
+    <None Include="shaders\dxvk_present_common.glsl" />
+    <None Include="shaders\dxvk_present_frag.frag" />
+    <None Include="shaders\dxvk_present_frag_blit.frag" />
+    <None Include="shaders\dxvk_present_frag_ms.frag" />
+    <None Include="shaders\dxvk_present_frag_ms_amd.frag" />
+    <None Include="shaders\dxvk_present_frag_ms_blit.frag" />
+    <None Include="shaders\dxvk_present_vert.vert" />
+    <None Include="shaders\dxvk_resolve_frag_d.frag" />
+    <None Include="shaders\dxvk_resolve_frag_ds.frag" />
+    <None Include="shaders\dxvk_resolve_frag_f.frag" />
+    <None Include="shaders\dxvk_resolve_frag_f_amd.frag" />
+    <None Include="shaders\dxvk_resolve_frag_i.frag" />
+    <None Include="shaders\dxvk_resolve_frag_u.frag" />
+    <None Include="hud\shaders\hud_chunk_frag_background.frag" />
+    <None Include="hud\shaders\hud_chunk_frag_visualize.frag" />
+    <None Include="hud\shaders\hud_chunk_vert_background.vert" />
+    <None Include="hud\shaders\hud_chunk_vert_visualize.vert" />
+    <None Include="hud\shaders\hud_frag_common.glsl" />
+    <None Include="hud\shaders\hud_frame_time_eval.comp" />
+    <None Include="hud\shaders\hud_graph_frag.frag" />
+    <None Include="hud\shaders\hud_graph_vert.vert" />
+    <None Include="hud\shaders\hud_text_frag.frag" />
+    <None Include="hud\shaders\hud_text_vert.vert" />
+  </ItemGroup>
+</Project>

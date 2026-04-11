@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <ItemGroup>
+    <Filter Include="win32">
+      <UniqueIdentifier>{AA613210-0A96-4155-8F6F-48A58DC21CE4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sdl3">
+      <UniqueIdentifier>{64C553E3-DEF0-49E8-B6A3-3A069301B350}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sdl2">
+      <UniqueIdentifier>{6AB7C505-C745-47E8-9E3F-9A5771A31FEF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="glfw">
+      <UniqueIdentifier>{99DD96E2-0E9B-4043-A242-E43299979B01}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="glfw\wsi_monitor_glfw.cpp">
+      <Filter>glfw</Filter>
+    </ClCompile>
+    <ClCompile Include="glfw\wsi_platform_glfw.cpp">
+      <Filter>glfw</Filter>
+    </ClCompile>
+    <ClCompile Include="glfw\wsi_window_glfw.cpp">
+      <Filter>glfw</Filter>
+    </ClCompile>
+    <ClCompile Include="sdl2\wsi_monitor_sdl2.cpp">
+      <Filter>sdl2</Filter>
+    </ClCompile>
+    <ClCompile Include="sdl2\wsi_platform_sdl2.cpp">
+      <Filter>sdl2</Filter>
+    </ClCompile>
+    <ClCompile Include="sdl2\wsi_window_sdl2.cpp">
+      <Filter>sdl2</Filter>
+    </ClCompile>
+    <ClCompile Include="sdl3\wsi_monitor_sdl3.cpp">
+      <Filter>sdl3</Filter>
+    </ClCompile>
+    <ClCompile Include="sdl3\wsi_platform_sdl3.cpp">
+      <Filter>sdl3</Filter>
+    </ClCompile>
+    <ClCompile Include="sdl3\wsi_window_sdl3.cpp">
+      <Filter>sdl3</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\wsi_monitor_win32.cpp">
+      <Filter>win32</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\wsi_platform_win32.cpp">
+      <Filter>win32</Filter>
+    </ClCompile>
+    <ClCompile Include="win32\wsi_window_win32.cpp">
+      <Filter>win32</Filter>
+    </ClCompile>
+    <ClCompile Include="wsi_edid.cpp" />
+    <ClCompile Include="wsi_platform.cpp" />
+  </ItemGroup>
+</Project>

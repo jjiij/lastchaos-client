@@ -1,0 +1,34 @@
+.DS_Store
+
+# Build directories
+/build/
+**/build/
+cmake-build-*/
+
+# CMake/Ninja/Make generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+Makefile
+build.ninja
+.ninja_deps
+.ninja_log
+
+# Common compiled/binary artifacts
+*.o
+*.obj
+*.lo
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+*.out
+
+# macOS bundle outputs
+*.app/
+
+# Exclude game assets
+game-assets/
