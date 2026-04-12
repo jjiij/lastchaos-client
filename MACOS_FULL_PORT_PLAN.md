@@ -11,10 +11,6 @@ Date: 2026-04-11
 - Lowered `porting/CMakeLists.txt` minimum CMake version to `3.21` to match the repo root and unblock Linux/macOS probe validation on standard toolchains.
 - Added strict `nksp_probe` link mode toggle (`LASTCHAOS_NKSP_STRICT_LINK`) so unresolved-symbol closure can be enforced in validation runs.
 - Added deterministic `EntitiesMP` header generation script (`scripts/generate_entitiesmp_headers.sh`) and integrated it into full macOS build preflight.
-- Added `Nksp` non-Windows single-instance adapter (`NkspPlatformAdapters`) so process-lock behavior is isolated from Win32 ToolHelp logic.
-- Extended unresolved-symbol reporting with subsystem buckets (engine/gameplay, rendering, IPC/process, launcher/entry).
-- Added optional native `Nksp` CMake blueprint target (`lastchaos_nksp_native_blueprint`) for dedicated link-closure iteration.
-- Added launcher startup diagnostics for bundled Vulkan runtime path and gfx environment hints.
 
 ## Goal
 

@@ -19,20 +19,11 @@ fi
 OUT_DIR="$(dirname "${TARGET_BIN}")"
 OUT_TXT="${OUT_DIR}/nksp_unresolved_symbols.txt"
 OUT_SUMMARY="${OUT_DIR}/nksp_unresolved_symbols_summary.txt"
-OUT_SUBSYSTEM="${OUT_DIR}/nksp_unresolved_symbols_by_subsystem.txt"
 
-nm -u "${TARGET_BIN}" | sed '/^$/d' > "${OUT_TXT}" || true
-
-if command -v c++filt >/dev/null 2>&1; then
-  DEMANGLE_TOOL="c++filt"
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  nm -u "${TARGET_BIN}" | sed '/^$/d' > "${OUT_TXT}" || true
 else
-  DEMANGLE_TOOL=""
-fi
-
-if [[ -n "${DEMANGLE_TOOL}" ]]; then
-  awk '{print $NF}' "${OUT_TXT}" | c++filt > "${OUT_TXT}.demangled"
-else
-  awk '{print $NF}' "${OUT_TXT}" > "${OUT_TXT}.demangled"
+  nm -u "${TARGET_BIN}" | sed '/^$/d' > "${OUT_TXT}" || true
 fi
 
 awk '
@@ -52,31 +43,6 @@ END{
 }
 ' "${OUT_TXT}" > "${OUT_SUMMARY}"
 
-awk '
-function classify(sym) {
-  l=tolower(sym)
-  if (l ~ /ipc|sharedmemory|xextipcevent|queue/) return "ipc_process"
-  if (l ~ /vulkan|render|gfx|d3d|gl|moltenvk/) return "rendering"
-  if (l ~ /launcher|cmdline|winmain|submain|updatenewlauncher/) return "launcher_entry"
-  if (l ~ /entity|world|game|engine|clientapp|_pnetwork|_pgame/) return "engine_gameplay"
-  return "other"
-}
-{
-  subsystem=classify($0)
-  count[subsystem]++
-  total++
-}
-END{
-  printf("Total unresolved symbols (demangled): %d\n", total+0)
-  printf("  engine_gameplay: %d\n", count["engine_gameplay"]+0)
-  printf("  rendering: %d\n", count["rendering"]+0)
-  printf("  ipc_process: %d\n", count["ipc_process"]+0)
-  printf("  launcher_entry: %d\n", count["launcher_entry"]+0)
-  printf("  other: %d\n", count["other"]+0)
-}
-' "${OUT_TXT}.demangled" > "${OUT_SUBSYSTEM}"
-
 echo "Wrote unresolved-symbol report:"
 echo "  ${OUT_TXT}"
 echo "  ${OUT_SUMMARY}"
-echo "  ${OUT_SUBSYSTEM}"

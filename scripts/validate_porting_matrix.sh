@@ -12,7 +12,6 @@ set -euo pipefail
 #   LASTCHAOS_VALIDATE_NKSP_PROBE          (default: 1 on macOS, 0 elsewhere)
 #   LASTCHAOS_VALIDATE_NKSP_UNRESOLVED     (default: 1 on macOS when nksp probe is enabled)
 #   LASTCHAOS_VALIDATE_NKSP_STRICT_LINK    (default: 0; set 1 to fail on unresolved symbols)
-#   LASTCHAOS_VALIDATE_NKSP_NATIVE_BLUEPRINT (default: 0; set 1 on macOS to build native blueprint target)
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="${LASTCHAOS_VALIDATE_BUILD_DIR:-${ROOT_DIR}/build/validate}"
@@ -31,7 +30,6 @@ MACOS_ARCHS="${LASTCHAOS_VALIDATE_ARCHS:-${DEFAULT_ARCHS}}"
 VALIDATE_NKSP="${LASTCHAOS_VALIDATE_NKSP_PROBE:-${DEFAULT_VALIDATE_NKSP}}"
 VALIDATE_UNRESOLVED="${LASTCHAOS_VALIDATE_NKSP_UNRESOLVED:-1}"
 VALIDATE_STRICT_LINK="${LASTCHAOS_VALIDATE_NKSP_STRICT_LINK:-0}"
-VALIDATE_NATIVE_BLUEPRINT="${LASTCHAOS_VALIDATE_NKSP_NATIVE_BLUEPRINT:-0}"
 
 mkdir -p "${BUILD_DIR}"
 
@@ -41,12 +39,7 @@ declare -a configure_args=(
   -G "${GENERATOR}"
   -DLASTCHAOS_ENABLE_NKSP_PROBE=ON
   -DLASTCHAOS_NKSP_STRICT_LINK=${VALIDATE_STRICT_LINK}
-  -DLASTCHAOS_ENABLE_NKSP_NATIVE_BLUEPRINT=${VALIDATE_NATIVE_BLUEPRINT}
 )
-
-if [[ "${VALIDATE_NATIVE_BLUEPRINT}" == "1" ]]; then
-  configure_args+=("-DLASTCHAOS_NKSP_NATIVE_STRICT_LINK=${VALIDATE_STRICT_LINK}")
-fi
 
 if [[ "${HOST_OS}" == "Darwin" && -n "${MACOS_ARCHS}" ]]; then
   configure_args+=("-DCMAKE_OSX_ARCHITECTURES=${MACOS_ARCHS}")
@@ -67,11 +60,6 @@ if [[ "${HOST_OS}" == "Darwin" && "${VALIDATE_NKSP}" == "1" ]]; then
     echo "== Report nksp_probe unresolved symbols =="
     "${ROOT_DIR}/scripts/report_nksp_unresolved_symbols.sh" "${BUILD_DIR}/nksp_probe"
   fi
-fi
-
-if [[ "${HOST_OS}" == "Darwin" && "${VALIDATE_NATIVE_BLUEPRINT}" == "1" ]]; then
-  echo "== Build lastchaos_nksp_native_blueprint (macOS) =="
-  cmake --build "${BUILD_DIR}" --target lastchaos_nksp_native_blueprint -j "${JOBS}"
 fi
 
 cat <<'EOF'

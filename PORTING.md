@@ -30,9 +30,3 @@ For macOS link-closure work, use strict mode:
 ```bash
 LASTCHAOS_VALIDATE_NKSP_STRICT_LINK=1 ./scripts/validate_porting_matrix.sh
 ```
-
-To include native target blueprint build in the same pass (macOS host):
-
-```bash
-LASTCHAOS_VALIDATE_NKSP_STRICT_LINK=1 LASTCHAOS_VALIDATE_NKSP_NATIVE_BLUEPRINT=1 ./scripts/validate_porting_matrix.sh
-```
