@@ -46,7 +46,15 @@ else
   install_macos_terminal_launcher "${APP_DIR}" "${BUILD_DIR}/porting/lastchaos_login_check"
 fi
 
-install_sl_dta_for_bundle "${APP_DIR}" "${BUILD_DIR}/porting/sl.dta"
+SL_DTA_PATH="${BUILD_DIR}/porting/sl.dta"
+if [[ ! -f "${SL_DTA_PATH}" ]]; then
+  echo "Warning: ${SL_DTA_PATH} missing (Go generator unavailable); writing fallback sl.dta from LASTCHAOS_LOGIN_* env." >&2
+  mkdir -p "$(dirname "${SL_DTA_PATH}")"
+  cat > "${SL_DTA_PATH}" <<EOF
+${LC_LOGIN_NAME}	${LC_LOGIN_HOST}	${LC_LOGIN_PORT}	${LC_LOGIN_VERSION}	${LC_LOGIN_USERS}
+EOF
+fi
+install_sl_dta_for_bundle "${APP_DIR}" "${SL_DTA_PATH}"
 install_macos_vulkan_runtime_if_available "${APP_DIR}" "${LASTCHAOS_MOLTENVK_DYLIB:-}"
 
 sign_macos_app_bundle "${APP_DIR}"
