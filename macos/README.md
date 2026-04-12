@@ -84,18 +84,6 @@ produces `build/macos/LastChaos.dmg` by default.
 
 Run these commands in addition to macOS packaging checks so Windows/Linux baselines stay visible while macOS work continues:
 
-### One-command host validation helper
-
-```bash
-./scripts/validate_porting_matrix.sh
-```
-
-Notes:
-- On Linux/macOS hosts, this script runs configure + `lastchaos_porting_probe` + `lastchaos_login_check`.
-- On macOS, it also builds `nksp_probe` and emits unresolved-symbol reports (`nksp_unresolved_symbols*.txt`).
-- You can turn on strict link closure checks with `LASTCHAOS_VALIDATE_NKSP_STRICT_LINK=1` (disables permissive unresolved-link fallback for `nksp_probe`).
-- It prints explicit Windows x64 baseline commands for CI/manual execution on Windows runners.
-
 ### Linux x64 probe build
 
 ```bash
