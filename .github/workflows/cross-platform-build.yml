@@ -89,6 +89,13 @@ jobs:
           Copy-Item -Path $found -Destination "Tools.Win32/ecc.exe" -Force
           Write-Host "Using ECC: Tools.Win32/ecc.exe"
 
+      - name: Prepare Client Output Dirs
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path "Bin" -Force | Out-Null
+          New-Item -ItemType Directory -Path "Bin/x64" -Force | Out-Null
+          New-Item -ItemType Directory -Path "dist" -Force | Out-Null
+
       - name: Build solution
         working-directory: source
         shell: cmd
