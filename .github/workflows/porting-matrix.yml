@@ -1,0 +1,27 @@
+name: Porting Matrix
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  linux-x64-probes:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build/linux-x64 -G "Unix Makefiles"
+      - name: Build probes
+        run: cmake --build build/linux-x64 --target lastchaos_porting_probe lastchaos_login_check -j "$(nproc)"
+
+  windows-x64-baseline:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build\win64 -G "Visual Studio 17 2022" -A x64
+      - name: Build probes (Windows baseline)
+        run: cmake --build build\win64 --config Release --target lastchaos_porting_probe lastchaos_login_check

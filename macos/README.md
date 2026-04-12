@@ -8,6 +8,7 @@
 | `client-source/scripts/package_full_macos_app.sh` | Full game bundle: native client + **entire** `Data/` tree under `Contents/Resources/Game/` |
 | `client-source/scripts/build_full_macos_app.sh` | Same as above with **checks**, optional `.lastchaos_full_bundle.env`, optional `LASTCHAOS_CREATE_DMG=1` |
 | `client-source/scripts/create_macos_dmg.sh` | Pack `LastChaos.app` into a **single-file** `LastChaos.dmg` for distribution |
+| `client-source/scripts/validate_macos_bundle.sh` | Run host-side signed-bundle checks and emit per-host validation report (`bundle_validation_<arch>.txt`) |
 
 Output location (default):
 
@@ -70,6 +71,30 @@ Login servers are read from `sl.dta` next to that game data (engine uses `_fnmAp
 - For intentional bring-up/debug packaging only, you can bypass with:
   - `LASTCHAOS_ALLOW_PLACEHOLDER_HEADERS=1`
 
+
+### Host validation (Intel + Apple Silicon)
+
+After packaging, run on each macOS host architecture:
+
+```bash
+./scripts/validate_macos_bundle.sh build/macos/LastChaos.app
+```
+
+This captures:
+
+- binary architecture validation (`lipo`)
+- `codesign --verify` + `codesign --display`
+- Gatekeeper assessment (`spctl`, when available)
+- bundled `sl.dta` and `Data/` presence checks
+
+Optional login smoke execution can be attached to the validation report by setting:
+
+```bash
+LASTCHAOS_RUN_LOGIN_SMOKE=1 \
+LASTCHAOS_LOGIN_SMOKE_CMD='open -a Terminal build/macos/LastChaos.app' \
+./scripts/validate_macos_bundle.sh build/macos/LastChaos.app
+```
+
 ### Single downloadable file
 
 macOS does not ship one monolithic “exe”; the standard pattern is a **`.dmg`** containing `LastChaos.app`. After `package_full_macos_app.sh`:
@@ -95,7 +120,7 @@ cmake --build build/linux --target lastchaos_porting_probe -j"$(getconf _NPROCES
 
 ```powershell
 cmake -S . -B build\win64 -G "Visual Studio 17 2022" -A x64
-cmake --build build\win64 --config Release --target GameMP
+cmake --build build\win64 --config Release --target lastchaos_porting_probe lastchaos_login_check
 ```
 
 ## Double-click opens Terminal

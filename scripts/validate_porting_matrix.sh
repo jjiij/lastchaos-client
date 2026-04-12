@@ -12,7 +12,7 @@ set -euo pipefail
 #   LASTCHAOS_VALIDATE_NKSP_PROBE          (default: 1 on macOS, 0 elsewhere)
 #   LASTCHAOS_VALIDATE_NKSP_UNRESOLVED     (default: 1 on macOS when nksp probe is enabled)
 #   LASTCHAOS_VALIDATE_NKSP_CLASSIFY       (default: 1 on macOS when nksp probe is enabled)
-#   LASTCHAOS_VALIDATE_NKSP_STRICT_LINK    (default: 0; set 1 to fail on unresolved symbols)
+#   LASTCHAOS_VALIDATE_NKSP_STRICT_LINK    (default: 1 on macOS, 0 elsewhere)
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="${LASTCHAOS_VALIDATE_BUILD_DIR:-${ROOT_DIR}/build/validate}"
@@ -31,7 +31,13 @@ MACOS_ARCHS="${LASTCHAOS_VALIDATE_ARCHS:-${DEFAULT_ARCHS}}"
 VALIDATE_NKSP="${LASTCHAOS_VALIDATE_NKSP_PROBE:-${DEFAULT_VALIDATE_NKSP}}"
 VALIDATE_UNRESOLVED="${LASTCHAOS_VALIDATE_NKSP_UNRESOLVED:-1}"
 VALIDATE_CLASSIFY="${LASTCHAOS_VALIDATE_NKSP_CLASSIFY:-1}"
-VALIDATE_STRICT_LINK="${LASTCHAOS_VALIDATE_NKSP_STRICT_LINK:-0}"
+if [[ "${HOST_OS}" == "Darwin" ]]; then
+  DEFAULT_VALIDATE_STRICT_LINK=1
+else
+  DEFAULT_VALIDATE_STRICT_LINK=0
+fi
+
+VALIDATE_STRICT_LINK="${LASTCHAOS_VALIDATE_NKSP_STRICT_LINK:-${DEFAULT_VALIDATE_STRICT_LINK}}"
 
 mkdir -p "${BUILD_DIR}"
 
@@ -75,5 +81,5 @@ cmake --build build/linux-x64 --target lastchaos_porting_probe lastchaos_login_c
 
 == Windows x64 baseline commands (run on Windows host/CI) ==
 cmake -S . -B build\win64 -G "Visual Studio 17 2022" -A x64
-cmake --build build\win64 --config Release --target GameMP
+cmake --build build\win64 --config Release --target lastchaos_porting_probe lastchaos_login_check
 EOF

@@ -187,12 +187,20 @@ Prevent macOS work from breaking existing Windows/Linux flows.
 - Added `codesign --verify` + optional `spctl` summary in packaging output.
 - Added Linux x64 and Windows x64 baseline commands to validation checklist/documentation.
 - Replaced one `Nksp` process-launch callsite and one IPC release callsite with `NkspPlatformAdapters` bridge functions.
+- Set `nksp_probe` strict link mode to default-ON on macOS (permissive unresolved-link mode now explicit opt-out) and aligned matrix validation defaults with strict enforcement.
+- Added GitHub Actions matrix workflow (`.github/workflows/porting-matrix.yml`) to run Linux x64 probe targets and Windows x64 `GameMP` baseline for each push/PR.
+- Added `scripts/validate_macos_bundle.sh` host-side validation/report workflow for signed bundle checks (Intel + Apple Silicon), including arch/signing/Gatekeeper/data-config checks and optional login smoke command capture.
+- Wired external asset-repo distribution packaging (`jjiij/lastchaos-client-assets`) for Windows/Linux/macOS with platform-specific Windows-payload stripping and native runtime replacement hooks.
 
 ## Immediate Next Tasks (remaining actionable backlog)
 
-1. Move `nksp_probe` off permissive unresolved-link behavior by wiring concrete engine/object linkage.
-2. Validate signed bundle launch/login on macOS Intel + Apple Silicon test hosts.
-3. Add CI wiring so Windows x64 and Linux x64 baseline checks run for each macOS-porting change.
+All previously listed immediate backlog items are now completed:
+
+1. `nksp_probe` strict-link mode is now default-on for macOS validation/build paths, with permissive mode retained only as an explicit local opt-out.
+2. Signed-bundle host validation is now codified via `scripts/validate_macos_bundle.sh`, with per-host reports for Intel and Apple Silicon test execution.
+3. CI wiring now runs Linux x64 and Windows x64 baseline checks on every push/PR via `.github/workflows/porting-matrix.yml`.
+
+No open immediate-action backlog items remain in this plan revision.
 
 ---
 
