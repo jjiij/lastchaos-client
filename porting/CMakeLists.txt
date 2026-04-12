@@ -75,6 +75,10 @@ add_executable(lastchaos_login_check
 target_link_libraries(lastchaos_login_check PRIVATE lastchaos_porting)
 target_compile_features(lastchaos_login_check PRIVATE cxx_std_17)
 
+if(WIN32)
+  target_link_libraries(lastchaos_login_check PRIVATE Ws2_32.lib)
+endif()
+
 set(LC_LOGIN_CONFIG_PATH "${CMAKE_CURRENT_BINARY_DIR}/sl.dta")
 set(LASTCHAOS_LOGIN_NAME "Local" CACHE STRING "Server display name written into generated sl.dta")
 set(LASTCHAOS_LOGIN_HOST "127.0.0.1" CACHE STRING "Login server host/IP written into generated sl.dta")
