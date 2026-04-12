@@ -96,11 +96,44 @@ jobs:
           New-Item -ItemType Directory -Path "Bin/x64" -Force | Out-Null
           New-Item -ItemType Directory -Path "dist" -Force | Out-Null
 
+      - name: Build Boost Dependencies
+        shell: pwsh
+        run: |
+          $boostUnderscore = "1_84_0"
+          $boostVersion = "1.84.0"
+          $boostDir = "_deps/boost_$boostUnderscore"
+          $boostZip = "_deps/boost_$boostUnderscore.zip"
+          $boostUrl = "https://archives.boost.io/release/$boostVersion/source/boost_$boostUnderscore.zip"
+
+          New-Item -ItemType Directory -Path "_deps" -Force | Out-Null
+          if (!(Test-Path $boostDir)) {
+            Invoke-WebRequest -Uri $boostUrl -OutFile $boostZip
+            Expand-Archive -Path $boostZip -DestinationPath "_deps" -Force
+          }
+
+          Push-Location $boostDir
+          try {
+            cmd /c bootstrap.bat
+            if ($LASTEXITCODE -ne 0) { throw "Boost bootstrap failed" }
+
+            $addressModel = if ("${{ matrix.platform }}" -eq "x64") { "64" } else { "32" }
+            cmd /c "b2.exe -q toolset=msvc-14.2 address-model=$addressModel variant=release link=static runtime-link=shared threading=multi --with-thread --with-system --with-chrono --with-date_time stage"
+            if ($LASTEXITCODE -ne 0) { throw "Boost build failed" }
+          }
+          finally {
+            Pop-Location
+          }
+
+          $boostInclude = (Resolve-Path $boostDir).Path
+          $boostLib = (Resolve-Path "$boostDir/stage/lib").Path
+          "BOOST_INCLUDE=$boostInclude" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "BOOST_LIB=$boostLib" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
       - name: Build solution
         working-directory: source
         shell: cmd
         run: |
-          msbuild LCClient.sln /m /p:Configuration=LCRelease /p:Platform=${{ matrix.platform }} /p:PreferredToolArchitecture=x64 /t:Common;LCCrypt;CWebPage;Nksp;Shaders;Engine;EntitiesMP;GameMP
+          msbuild LCClient.sln /m /p:Configuration=LCRelease /p:Platform=${{ matrix.platform }} /p:PreferredToolArchitecture=x64 /p:IncludePath=%BOOST_INCLUDE%;$(IncludePath) /p:LibraryPath=%BOOST_LIB%;$(LibraryPath) /t:Common;LCCrypt;CWebPage;Nksp;Shaders;Engine;EntitiesMP;GameMP
 
       - name: Create Windows setup bundle
         shell: pwsh
