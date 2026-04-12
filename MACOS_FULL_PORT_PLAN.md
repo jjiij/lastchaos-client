@@ -1,8 +1,8 @@
 # LastChaos Full Port Plan (macOS-first, cross-platform-safe)
 
-Date: 2026-04-11
+Date: 2026-04-12
 
-## Recent Progress (2026-04-11)
+## Recent Progress (2026-04-12)
 
 - Added full-package preflight `scripts/check_generated_headers.sh` and wired it into `scripts/build_full_macos_app.sh`.
 - Full macOS packaging now fails early when placeholder generated headers are detected, with a documented escape hatch (`LASTCHAOS_ALLOW_PLACEHOLDER_HEADERS=1`) for compile-only bring-up.
@@ -11,6 +11,9 @@ Date: 2026-04-11
 - Lowered `porting/CMakeLists.txt` minimum CMake version to `3.21` to match the repo root and unblock Linux/macOS probe validation on standard toolchains.
 - Added strict `nksp_probe` link mode toggle (`LASTCHAOS_NKSP_STRICT_LINK`) so unresolved-symbol closure can be enforced in validation runs.
 - Added deterministic `EntitiesMP` header generation script (`scripts/generate_entitiesmp_headers.sh`) and integrated it into full macOS build preflight.
+- Added packaging manifest output (`build/macos/LastChaos.bundle_manifest.txt`) during full macOS app assembly to record bundle archs, bundled frameworks, login endpoint, and Data snapshot/hash for reproducible diagnostics.
+- Added unresolved-symbol subsystem classifier (`scripts/classify_nksp_unresolved_symbols.sh`) and wired it into matrix validation to group `nksp_probe` unresolved symbols by engine/gameplay, rendering, IPC/process-launcher, input/windowing, and filesystem/assets.
+- Added `Nksp` platform-adapter usage for one process-launch path (`CheckModReload`) and one IPC release callsite (`ReleaseIPC`) so non-Windows bring-up relies less on direct Win32-only blocks.
 
 ## Goal
 
@@ -121,8 +124,6 @@ Produce reproducible `.app` / `.dmg` outputs suitable for internal testing and d
 ### Tasks
 1. Keep universal arch controls (`LASTCHAOS_MACOS_ARCHS`) and binary arch validation (`lipo`) in CI/scripts.
 2. Validate ad-hoc and developer signing flows; verify Gatekeeper behavior.
-3. Add bundle verification command set (`codesign --verify`, `spctl` where available).
-4. Add packaging manifest output (binary archs, included dylibs, sl.dta endpoint, asset root hash/size summary).
 
 ### Exit Criteria
 - One-command reproducible package build.
@@ -176,18 +177,22 @@ Prevent macOS work from breaking existing Windows/Linux flows.
 
 ---
 
-## Immediate Next 10 Tasks (actionable backlog)
+## Completed Backlog Items
 
-1. Add native game target blueprint in CMake (inputs/libs/options documented even if partial).
-2. Generate first unresolved-symbol report for macOS native target.
-3. Classify unresolved symbols by subsystem (engine globals, rendering, IPC, launcher).
-4. Replace one Win32 process-launch block in `Nksp` with adapter call + mac implementation stub.
-5. Replace one remaining Win32-only IPC callsite with adapter-backed interface.
-6. Add script check that confirms generated headers are real (non-placeholder) before full package.
-7. Add startup logging for render backend + Vulkan dylib path.
-8. Add `codesign --verify` + optional `spctl` summary in packaging script output.
-9. Add Linux x64 probe build command to validation checklist.
-10. Add Windows x64 baseline build command to validation checklist/documentation.
+- Added native game target blueprint option in top-level CMake (`LASTCHAOS_ENABLE_NKSP_NATIVE_BLUEPRINT`).
+- Added unresolved-symbol reporting helper and wired it into validation runs.
+- Added unresolved-symbol subsystem classification outputs and wired them into validation runs.
+- Added script check that validates generated headers before full macOS packaging.
+- Added startup diagnostics for Vulkan loader candidate probing and `DYLD_LIBRARY_PATH` visibility.
+- Added `codesign --verify` + optional `spctl` summary in packaging output.
+- Added Linux x64 and Windows x64 baseline commands to validation checklist/documentation.
+- Replaced one `Nksp` process-launch callsite and one IPC release callsite with `NkspPlatformAdapters` bridge functions.
+
+## Immediate Next Tasks (remaining actionable backlog)
+
+1. Move `nksp_probe` off permissive unresolved-link behavior by wiring concrete engine/object linkage.
+2. Validate signed bundle launch/login on macOS Intel + Apple Silicon test hosts.
+3. Add CI wiring so Windows x64 and Linux x64 baseline checks run for each macOS-porting change.
 
 ---
 

@@ -9,4 +9,12 @@
 //  - -1: adapter could not run (see out_errno when provided)
 int NkspCheckSingleInstanceUnix(const char* lock_path, int* out_errno);
 
+// Platform adapter for replacing the current process image with another executable.
+// Returns the underlying exec status code (-1 on failure on POSIX/CRT variants).
+int NkspExecReplaceProcess(const char* command, const char* const* argv);
+
+// Platform adapter for releasing legacy IPC event state used by launcher flows.
+// No-op on non-Windows builds.
+void NkspReleaseIPCBridge(void);
+
 #endif

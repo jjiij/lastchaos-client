@@ -224,3 +224,79 @@ verify_macos_app_bundle_security() {
     echo "verify_macos_app_bundle_security: spctl not in PATH, skipping Gatekeeper assessment"
   fi
 }
+
+# Emit a compact packaging manifest to make bundle contents/auditing reproducible.
+# Includes executable/Vulkan arch info, bundled dylib listing, endpoint summary,
+# and an asset-root size/hash snapshot when available.
+write_macos_bundle_manifest() {
+  local app_dir="$1"
+  local manifest_path="$2"
+  local login_name="$3"
+  local login_host="$4"
+  local login_port="$5"
+  local login_version="$6"
+  local login_users="$7"
+  local requested_archs="$8"
+
+  local launcher_bin="${app_dir}/Contents/MacOS/LastChaosLauncher.bin"
+  local frameworks_dir="${app_dir}/Contents/Frameworks"
+  local game_dir="${app_dir}/Contents/Resources/Game"
+  local game_data_dir=""
+
+  if [[ -d "${game_dir}/Data" ]]; then
+    game_data_dir="${game_dir}/Data"
+  elif [[ -d "${game_dir}/data" ]]; then
+    game_data_dir="${game_dir}/data"
+  fi
+
+  mkdir -p "$(dirname "${manifest_path}")"
+
+  {
+    echo "LastChaos macOS packaging manifest"
+    echo "generated_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    echo "app_dir=${app_dir}"
+    echo "requested_archs=${requested_archs}"
+    echo "login_endpoint=${login_name} ${login_host}:${login_port} (ver=${login_version}, users=${login_users})"
+    echo ""
+
+    echo "[binary_archs]"
+    if command -v lipo >/dev/null 2>&1 && [[ -f "${launcher_bin}" ]]; then
+      local launcher_archs
+      launcher_archs="$(lipo -archs "${launcher_bin}" 2>/dev/null || true)"
+      echo "LastChaosLauncher.bin=${launcher_archs:-unavailable}"
+      if [[ -f "${frameworks_dir}/libvulkan.1.dylib" ]]; then
+        local vulkan_archs
+        vulkan_archs="$(lipo -archs "${frameworks_dir}/libvulkan.1.dylib" 2>/dev/null || true)"
+        echo "libvulkan.1.dylib=${vulkan_archs:-unavailable}"
+      fi
+    else
+      echo "lipo=not_available"
+    fi
+    echo ""
+
+    echo "[bundled_frameworks]"
+    if [[ -d "${frameworks_dir}" ]]; then
+      find "${frameworks_dir}" -maxdepth 1 -mindepth 1 | sort | sed 's/^/ - /'
+    else
+      echo " - <none>"
+    fi
+    echo ""
+
+    echo "[asset_snapshot]"
+    if [[ -n "${game_data_dir}" ]]; then
+      echo "data_dir=${game_data_dir}"
+      du -sh "${game_data_dir}" 2>/dev/null | awk '{print "data_size_human="$1}'
+      if command -v shasum >/dev/null 2>&1; then
+        local data_digest
+        data_digest="$(find "${game_data_dir}" -type f -print0 | LC_ALL=C sort -z | xargs -0 shasum 2>/dev/null | shasum | awk '{print $1}')"
+        echo "data_tree_sha1=${data_digest:-unavailable}"
+      else
+        echo "data_tree_sha1=shasum_not_available"
+      fi
+    else
+      echo "data_dir=<missing>"
+    fi
+  } > "${manifest_path}"
+
+  echo "Wrote bundle manifest: ${manifest_path}"
+}

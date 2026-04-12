@@ -34,6 +34,7 @@ LC_LOGIN_PORT="${LASTCHAOS_LOGIN_PORT:-4001}"
 LC_LOGIN_VERSION="${LASTCHAOS_LOGIN_VERSION:-1000}"
 LC_LOGIN_USERS="${LASTCHAOS_LOGIN_USERS:-300}"
 LC_MACOS_ARCHS="${LASTCHAOS_MACOS_ARCHS:-x86_64;arm64}"
+LC_BUNDLE_MANIFEST="${BUILD_DIR}/LastChaos.bundle_manifest.txt"
 
 cmake -S "${ROOT_DIR}" -B "${BUILD_DIR}" -G "Unix Makefiles" \
   -DCMAKE_C_COMPILER=clang \
@@ -55,6 +56,15 @@ bundle_game_resources_if_available "${APP_DIR}" "${LASTCHAOS_ASSET_ROOT}"
 install_macos_terminal_launcher "${APP_DIR}" "${LASTCHAOS_CLIENT_BINARY}"
 install_sl_dta_for_bundle "${APP_DIR}" "${BUILD_DIR}/porting/sl.dta"
 install_macos_vulkan_runtime_if_available "${APP_DIR}" "${LASTCHAOS_MOLTENVK_DYLIB:-}"
+write_macos_bundle_manifest \
+  "${APP_DIR}" \
+  "${LC_BUNDLE_MANIFEST}" \
+  "${LC_LOGIN_NAME}" \
+  "${LC_LOGIN_HOST}" \
+  "${LC_LOGIN_PORT}" \
+  "${LC_LOGIN_VERSION}" \
+  "${LC_LOGIN_USERS}" \
+  "${LC_MACOS_ARCHS}"
 
 sign_macos_app_bundle "${APP_DIR}"
 verify_macos_app_bundle_security "${APP_DIR}"
@@ -86,4 +96,7 @@ ${LC_LOGIN_NAME} ${LC_LOGIN_HOST}:${LC_LOGIN_PORT} (ver=${LC_LOGIN_VERSION}, use
 
 Requested macOS architectures (CMake):
 ${LC_MACOS_ARCHS}
+
+Packaging manifest:
+${LC_BUNDLE_MANIFEST}
 EOF

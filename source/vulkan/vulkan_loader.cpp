@@ -1,4 +1,5 @@
 #include <tuple>
+#include <cstdlib>
 
 #include "vulkan_loader.h"
 
@@ -34,7 +35,16 @@ namespace dxvk::vk {
 #endif
     }};
 
+    Logger::info("Vulkan: probing dynamic loader candidates");
+#ifdef __APPLE__
+    if (const char* dyldPath = std::getenv("DYLD_LIBRARY_PATH"))
+      Logger::info(str::format("Vulkan: DYLD_LIBRARY_PATH=", dyldPath));
+    else
+      Logger::info("Vulkan: DYLD_LIBRARY_PATH=<unset>");
+#endif
+
     for (auto dllName : dllNames) {
+      Logger::info(str::format("Vulkan: trying loader candidate ", dllName));
 
       HMODULE library = LoadLibraryA(dllName);
 
