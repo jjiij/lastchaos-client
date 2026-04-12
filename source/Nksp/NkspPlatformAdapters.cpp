@@ -5,6 +5,9 @@
 #include <fcntl.h>
 #include <sys/file.h>
 #include <unistd.h>
+#else
+#include <process.h>
+#include <SharedMemory/Ext_ipc_event.h>
 #endif
 
 int NkspCheckSingleInstanceUnix(const char* lock_path, int* out_errno)
@@ -41,5 +44,34 @@ int NkspCheckSingleInstanceUnix(const char* lock_path, int* out_errno)
     *out_errno = 0;
   }
   return 0;
+#endif
+}
+
+int NkspExecReplaceProcess(const char* command, const char* const* argv)
+{
+#ifdef PLATFORM_WIN32
+  return _execv(command, argv);
+#else
+  return execv(command, const_cast<char* const*>(argv));
+#endif
+}
+
+void NkspReleaseIPCBridge(void)
+{
+#ifdef PLATFORM_WIN32
+  XExtIPCManager<IPCEventInfo> IPCMgr;
+  for (int retry = 3; retry > 0; --retry)
+  {
+    int ret = IPCMgr.XExtIPCEventCreate(1, FALSE);
+    if (ret == 0)
+    {
+      IPCEventInfo eventInfo;
+      eventInfo.EventID = -1;
+      IPCMgr.XExtIPCEventPost(&eventInfo);
+      IPCMgr.XExtIPCEventRelease(FALSE);
+      break;
+    }
+    Sleep(500);
+  }
 #endif
 }
