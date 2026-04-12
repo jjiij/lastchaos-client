@@ -1,5 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
+set SCRIPT_DIR=%~dp0
+set ROOT_DIR=%SCRIPT_DIR%..\..
 
 :: LastChaos Installation Script for Windows
 :: This script installs dependencies and sets up the project
@@ -35,18 +37,18 @@ echo Setting up environment variables...
 set PATH=%PATH%;C:\Program Files\CMake\bin;C:\Program Files\Git\cmd;C:\Program Files\Vulkan\SDK\%VULKAN_SDK%\Bin
 
 :: Create build directory
-mkdir "%~dp0build\windows" 2>nul
+mkdir "%ROOT_DIR%\build\windows" 2>nul
 
 :: Run build
 echo.
 echo Building LastChaos...
-cd /d "%~dp0"
-call build_cross_platform.bat Release
+cd /d "%ROOT_DIR%"
+call "%ROOT_DIR%\scripts\build_cross_platform.bat" Release
 
 echo.
 echo ========================================
 echo Installation complete!
 echo ========================================
-echo Build directory: %~dp0build\windows
+echo Build directory: %ROOT_DIR%\build\windows
 echo To run: cd build\windows && LastChaos.exe
 pause

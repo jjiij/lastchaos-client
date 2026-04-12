@@ -5,7 +5,7 @@ set -euo pipefail
 # This script installs dependencies and sets up the project
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+ROOT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
 echo "========================================"
 echo "LastChaos macOS Installation"
@@ -45,7 +45,7 @@ mkdir -p "${ROOT_DIR}/build/macos"
 echo ""
 echo "Building LastChaos..."
 cd "${ROOT_DIR}"
-bash "${SCRIPT_DIR}/build_cross_platform.sh" Release
+bash "${ROOT_DIR}/scripts/build_cross_platform.sh" Release
 
 echo ""
 echo "========================================"

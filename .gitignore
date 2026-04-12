@@ -30,5 +30,5 @@ build.ninja
 # macOS bundle outputs
 *.app/
 
-# Exclude game assets
-game-assets/
+# Local unpacked game assets (kept outside git)
+/game-assets/

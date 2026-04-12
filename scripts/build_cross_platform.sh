@@ -69,8 +69,8 @@ case "${PLATFORM}" in
     macOS)
         echo ""
         echo "macOS: Creating app bundle..."
-        if [ -f "${SCRIPT_DIR}/build_macos_app.sh" ]; then
-            bash "${SCRIPT_DIR}/build_macos_app.sh"
+        if [ -f "${ROOT_DIR}/platform/macos/scripts/build_macos_app.sh" ]; then
+            bash "${ROOT_DIR}/platform/macos/scripts/build_macos_app.sh"
         fi
         ;;
     Linux)

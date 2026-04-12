@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 BUILD_DIR="${ROOT_DIR}/build/macos"
 APP_NAME="LastChaos.app"
 APP_DIR="${BUILD_DIR}/${APP_NAME}"
-TEMPLATE_DIR="${ROOT_DIR}/macos/AppTemplate"
+TEMPLATE_DIR="${ROOT_DIR}/platform/macos/app/AppTemplate"
 # shellcheck source=lib_macos_app_bundle.sh
-source "${ROOT_DIR}/scripts/lib_macos_app_bundle.sh"
+source "${SCRIPT_DIR}/lib_macos_app_bundle.sh"
 
 LC_LOGIN_NAME="${LASTCHAOS_LOGIN_NAME:-Local}"
 LC_LOGIN_HOST="${LASTCHAOS_LOGIN_HOST:-127.0.0.1}"

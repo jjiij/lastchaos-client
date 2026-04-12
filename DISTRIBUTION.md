@@ -1,49 +1,16 @@
-# Cross-Platform Distribution Packaging (with external assets repo)
+# Distribution
 
-The game assets are stored outside this repository in:
+Windows client artifacts are distributed through the GitHub workflow:
+- `.github/workflows/cross-platform-build.yml`
 
-- `https://github.com/jjiij/lastchaos-client-assets`
+Release flow:
+1. Publish a GitHub release.
+2. Workflow builds Windows `Win32` and `x64` client packages.
+3. Packages are uploaded to GoFile.
+4. GoFile links are appended to the release body under `## GoFile Downloads`.
 
-Use `scripts/build_distribution_bundle.sh` to stage platform distributions that always include the full asset payload and then apply platform-specific runtime adjustments.
+Package format:
+- `lastchaos-client-windows-win32.zip`
+- `lastchaos-client-windows-x64.zip`
 
-## Why platform adjustments are required
-
-The assets repository includes Windows-only launch/runtime files (for example top-level `*.exe`, `launcher.bat`, and `Bin/*.dll`/`*.exe`).
-
-For Linux and macOS distributions, the packaging script removes those Windows-only payloads and injects native replacements (launcher/app/runtime) when provided.
-
-## Local usage
-
-```bash
-# Linux staging (inject native launcher binary from local build output)
-./scripts/build_distribution_bundle.sh \
-  --platform linux \
-  --assets-root /path/to/lastchaos-client-assets \
-  --runtime-root "$PWD/build/linux-x64/porting" \
-  --archive
-
-# Windows staging
-./scripts/build_distribution_bundle.sh \
-  --platform windows \
-  --assets-root /path/to/lastchaos-client-assets \
-  --archive
-
-# macOS staging (inject LastChaos.app)
-./scripts/build_distribution_bundle.sh \
-  --platform macos \
-  --assets-root /path/to/lastchaos-client-assets \
-  --runtime-root "$PWD/build/macos" \
-  --archive
-```
-
-Archives are written under `build/dist/archives/`.
-
-## CI wiring
-
-`.github/workflows/distribution-matrix.yml` checks out this repository plus `jjiij/lastchaos-client-assets`, then builds and stages distribution artifacts for:
-
-- Linux x64
-- Windows x64
-- macOS (universal launcher/app path)
-
-Each job uploads an archive artifact (`lastchaos-<platform>-distribution`).
+Each archive is built from `source/Bin/`.

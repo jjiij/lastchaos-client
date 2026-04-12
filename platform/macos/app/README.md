@@ -4,11 +4,11 @@
 
 | Script | Purpose |
 |--------|---------|
-| `client-source/scripts/build_macos_app.sh` | Minimal `.app` with `lastchaos_login_check` (or override binary) + `sl.dta` in `MacOS/` |
-| `client-source/scripts/package_full_macos_app.sh` | Full game bundle: native client + **entire** `Data/` tree under `Contents/Resources/Game/` |
-| `client-source/scripts/build_full_macos_app.sh` | Same as above with **checks**, optional `.lastchaos_full_bundle.env`, optional `LASTCHAOS_CREATE_DMG=1` |
-| `client-source/scripts/create_macos_dmg.sh` | Pack `LastChaos.app` into a **single-file** `LastChaos.dmg` for distribution |
-| `client-source/scripts/validate_macos_bundle.sh` | Run host-side signed-bundle checks and emit per-host validation report (`bundle_validation_<arch>.txt`) |
+| `client-source/platform/macos/scripts/build_macos_app.sh` | Minimal `.app` with `lastchaos_login_check` (or override binary) + `sl.dta` in `MacOS/` |
+| `client-source/platform/macos/scripts/package_full_macos_app.sh` | Full game bundle: native client + **entire** `Data/` tree under `Contents/Resources/Game/` |
+| `client-source/platform/macos/scripts/build_full_macos_app.sh` | Same as above with **checks**, optional `.lastchaos_full_bundle.env`, optional `LASTCHAOS_CREATE_DMG=1` |
+| `client-source/platform/macos/scripts/create_macos_dmg.sh` | Pack `LastChaos.app` into a **single-file** `LastChaos.dmg` for distribution |
+| `client-source/platform/macos/scripts/validate_macos_bundle.sh` | Run host-side signed-bundle checks and emit per-host validation report (`bundle_validation_<arch>.txt`) |
 
 Output location (default):
 
@@ -32,7 +32,7 @@ After the bundle is assembled, `sign_macos_app_bundle` runs **`codesign`** on ma
 Use a **Development** or **Developer ID** identity when you need stricter testing:
 
 ```bash
-CODESIGN_IDENTITY="Apple Development: Your Name (XXXXXXXXXX)" ./scripts/build_macos_app.sh
+CODESIGN_IDENTITY="Apple Development: Your Name (XXXXXXXXXX)" ./platform/macos/scripts/build_macos_app.sh
 ```
 
 List identities: `security find-identity -v -p codesigning`
@@ -77,7 +77,7 @@ Login servers are read from `sl.dta` next to that game data (engine uses `_fnmAp
 After packaging, run on each macOS host architecture:
 
 ```bash
-./scripts/validate_macos_bundle.sh build/macos/LastChaos.app
+./platform/macos/scripts/validate_macos_bundle.sh build/macos/LastChaos.app
 ```
 
 This captures:
@@ -92,7 +92,7 @@ Optional login smoke execution can be attached to the validation report by setti
 ```bash
 LASTCHAOS_RUN_LOGIN_SMOKE=1 \
 LASTCHAOS_LOGIN_SMOKE_CMD='open -a Terminal build/macos/LastChaos.app' \
-./scripts/validate_macos_bundle.sh build/macos/LastChaos.app
+./platform/macos/scripts/validate_macos_bundle.sh build/macos/LastChaos.app
 ```
 
 ### Single downloadable file
@@ -100,7 +100,7 @@ LASTCHAOS_LOGIN_SMOKE_CMD='open -a Terminal build/macos/LastChaos.app' \
 macOS does not ship one monolithic “exe”; the standard pattern is a **`.dmg`** containing `LastChaos.app`. After `package_full_macos_app.sh`:
 
 ```bash
-./scripts/create_macos_dmg.sh
+./platform/macos/scripts/create_macos_dmg.sh
 ```
 
 produces `build/macos/LastChaos.dmg` by default.

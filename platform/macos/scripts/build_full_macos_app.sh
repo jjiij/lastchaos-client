@@ -11,12 +11,13 @@
 # You can store these in client-source/.lastchaos_full_bundle.env (see .lastchaos_full_bundle.env.example).
 #
 # Usage:
-#   ./scripts/build_full_macos_app.sh
-#   LASTCHAOS_CLIENT_BINARY=/path/to/client LASTCHAOS_ASSET_ROOT=/path/to/root ./scripts/build_full_macos_app.sh
+#   ./platform/macos/scripts/build_full_macos_app.sh
+#   LASTCHAOS_CLIENT_BINARY=/path/to/client LASTCHAOS_ASSET_ROOT=/path/to/root ./platform/macos/scripts/build_full_macos_app.sh
 
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 ENV_FILE="${ROOT_DIR}/.lastchaos_full_bundle.env"
 EXPECTED_ARCHS="${LASTCHAOS_EXPECT_CLIENT_ARCHS:-${LASTCHAOS_MACOS_ARCHS:-x86_64;arm64}}"
 
@@ -44,14 +45,14 @@ Example:
 
   LASTCHAOS_CLIENT_BINARY="$HOME/lc-macos/LastChaos" \
   LASTCHAOS_ASSET_ROOT="$HOME/lc-windows-client" \
-  ./scripts/build_full_macos_app.sh
+  ./platform/macos/scripts/build_full_macos_app.sh
 
 Optional login endpoint override:
 
   LASTCHAOS_LOGIN_NAME="Local Docker" \
   LASTCHAOS_LOGIN_HOST="127.0.0.1" \
   LASTCHAOS_LOGIN_PORT="4001" \
-  ./scripts/build_full_macos_app.sh
+  ./platform/macos/scripts/build_full_macos_app.sh
 
 Copy .lastchaos_full_bundle.env.example to .lastchaos_full_bundle.env and edit paths there.
 EOF
@@ -93,10 +94,10 @@ fi
 export LASTCHAOS_CLIENT_BINARY
 export LASTCHAOS_ASSET_ROOT
 
-"${ROOT_DIR}/scripts/package_full_macos_app.sh"
+"${ROOT_DIR}/platform/macos/scripts/package_full_macos_app.sh"
 
 if [[ "${LASTCHAOS_CREATE_DMG:-0}" == "1" ]]; then
-  "${ROOT_DIR}/scripts/create_macos_dmg.sh"
+  "${ROOT_DIR}/platform/macos/scripts/create_macos_dmg.sh"
 fi
 
 echo ""

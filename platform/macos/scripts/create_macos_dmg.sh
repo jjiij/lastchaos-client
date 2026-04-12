@@ -3,13 +3,13 @@ set -euo pipefail
 
 # Wraps an existing LastChaos.app into a single distributable .dmg (disk image).
 # Usage:
-#   ./scripts/create_macos_dmg.sh [path-to/LastChaos.app] [output-name.dmg]
+#   ./platform/macos/scripts/create_macos_dmg.sh [path-to/LastChaos.app] [output-name.dmg]
 #
 # Defaults:
 #   App:  client-source/build/macos/LastChaos.app
 #   DMG:  client-source/build/macos/LastChaos.dmg
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 BUILD_DIR="${ROOT_DIR}/build/macos"
 APP_SRC="${1:-${BUILD_DIR}/LastChaos.app}"
 DMG_OUT="${2:-${BUILD_DIR}/LastChaos.dmg}"

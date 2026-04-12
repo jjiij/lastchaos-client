@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 APP_PATH="${1:-${ROOT_DIR}/build/macos/LastChaos.app}"
 REPORT_DIR="${LASTCHAOS_BUNDLE_VALIDATION_DIR:-${ROOT_DIR}/build/macos}"
 REPORT_FILE="${REPORT_DIR}/bundle_validation_$(uname -m).txt"
