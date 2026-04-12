@@ -8,6 +8,7 @@
 | `client-source/scripts/package_full_macos_app.sh` | Full game bundle: native client + **entire** `Data/` tree under `Contents/Resources/Game/` |
 | `client-source/scripts/build_full_macos_app.sh` | Same as above with **checks**, optional `.lastchaos_full_bundle.env`, optional `LASTCHAOS_CREATE_DMG=1` |
 | `client-source/scripts/create_macos_dmg.sh` | Pack `LastChaos.app` into a **single-file** `LastChaos.dmg` for distribution |
+| `client-source/scripts/validate_macos_bundle.sh` | Run host-side signed-bundle checks and emit per-host validation report (`bundle_validation_<arch>.txt`) |
 
 Output location (default):
 
@@ -69,6 +70,30 @@ Login servers are read from `sl.dta` next to that game data (engine uses `_fnmAp
 - The check fails if temporary placeholder markers are detected in generated-header locations (for example, stubbed `EntitiesMP` headers), so full macOS bundles do not silently ship with compile-only scaffolding.
 - For intentional bring-up/debug packaging only, you can bypass with:
   - `LASTCHAOS_ALLOW_PLACEHOLDER_HEADERS=1`
+
+
+### Host validation (Intel + Apple Silicon)
+
+After packaging, run on each macOS host architecture:
+
+```bash
+./scripts/validate_macos_bundle.sh build/macos/LastChaos.app
+```
+
+This captures:
+
+- binary architecture validation (`lipo`)
+- `codesign --verify` + `codesign --display`
+- Gatekeeper assessment (`spctl`, when available)
+- bundled `sl.dta` and `Data/` presence checks
+
+Optional login smoke execution can be attached to the validation report by setting:
+
+```bash
+LASTCHAOS_RUN_LOGIN_SMOKE=1 \
+LASTCHAOS_LOGIN_SMOKE_CMD='open -a Terminal build/macos/LastChaos.app' \
+./scripts/validate_macos_bundle.sh build/macos/LastChaos.app
+```
 
 ### Single downloadable file
 
