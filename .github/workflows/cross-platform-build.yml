@@ -56,11 +56,13 @@ jobs:
           Compress-Archive -Path "$bundleDir/*" -DestinationPath $zipPath -CompressionLevel Optimal
 
       - name: Upload artifact
+        if: github.event_name != 'push'
         uses: actions/upload-artifact@v4
         with:
           name: windows-${{ matrix.suffix }}-bundle
           path: dist/lastchaos-windows-${{ matrix.suffix }}-setup-bundle.zip
           if-no-files-found: error
+          retention-days: 1
 
   build-linux:
     name: Build Linux Bundle (${{ matrix.arch }})
@@ -106,11 +108,13 @@ jobs:
           tar -C "${dist}" -czf "${dist}/lastchaos-linux-${{ matrix.suffix }}-bundle.tar.gz" "lastchaos-linux-${{ matrix.suffix }}-bundle"
 
       - name: Upload artifact
+        if: github.event_name != 'push'
         uses: actions/upload-artifact@v4
         with:
           name: linux-${{ matrix.suffix }}-bundle
           path: dist/lastchaos-linux-${{ matrix.suffix }}-bundle.tar.gz
           if-no-files-found: error
+          retention-days: 1
 
   build-macos:
     name: Build macOS Bundle
@@ -138,21 +142,26 @@ jobs:
           platform/macos/scripts/create_macos_dmg.sh
 
       - name: Upload app artifact
+        if: github.event_name != 'push'
         uses: actions/upload-artifact@v4
         with:
           name: macos-app
           path: build/macos/LastChaos.app
           if-no-files-found: error
+          retention-days: 1
 
       - name: Upload dmg artifact
+        if: github.event_name != 'push'
         uses: actions/upload-artifact@v4
         with:
           name: macos-dmg
           path: build/macos/LastChaos.dmg
           if-no-files-found: error
+          retention-days: 1
 
   publish-gofile:
     name: Upload All Dist Files To GoFile
+    if: github.event_name != 'push'
     needs: [build-windows, build-linux, build-macos]
     runs-on: ubuntu-latest
     permissions:
@@ -226,6 +235,7 @@ jobs:
         with:
           name: gofile-links
           path: gofile_links.md
+          retention-days: 1
 
       - name: Append GoFile links to GitHub release body
         if: github.event_name == 'release'
