@@ -1,6 +1,7 @@
 name: Cross Platform Dist Build And GoFile Publish
 
 on:
+  push:
   workflow_dispatch:
   release:
     types: [published]
