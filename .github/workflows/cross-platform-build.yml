@@ -34,7 +34,7 @@ jobs:
         working-directory: source
         shell: cmd
         run: |
-          msbuild LCClient.sln /m /t:Build /p:Configuration=Template /p:Platform=${{ matrix.platform }} /p:PreferredToolArchitecture=x64
+          msbuild LCClient.sln /m /t:Build /p:Configuration=LCRelease /p:Platform=${{ matrix.platform }} /p:PreferredToolArchitecture=x64
 
       - name: Create Windows setup bundle
         shell: pwsh
