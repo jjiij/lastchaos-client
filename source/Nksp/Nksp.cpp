@@ -44,6 +44,7 @@
 //#include "SplashScreen.h"
 #include "MainWindow.h"
 #include "GLSettings.h"
+#include "NkspPlatformAdapters.h"
 //#include "LevelInfo.h"
 //#include "LCDDrawing.h"
 #include "CmdLine.h"
@@ -429,6 +430,15 @@ BOOL IsRunning(void)
 
 	return FALSE;
 #else
+	int lockErrno = 0;
+	const int lockStatus = NkspCheckSingleInstanceUnix("/tmp/lastchaos_nksp.lock", &lockErrno);
+	if (lockStatus == 1) {
+		CPrintF(TRANS("LastChaos appears to be running already (unix lock active).\n"));
+		return TRUE;
+	}
+	if (lockStatus < 0) {
+		CPrintF(TRANS("WARNING: single-instance check failed (errno=%d)\n"), lockErrno);
+	}
 	return FALSE;
 #endif
 }
@@ -1691,7 +1701,7 @@ void CheckModReload(void)
 			argv[5] = "+quickjoin";
 			argv[6] = NULL;
 		}
-		_execv(strCommand, argv);
+		NkspExecReplaceProcess(strCommand, argv);
 #endif
 	}
 }
@@ -1699,22 +1709,7 @@ void CheckModReload(void)
 // 2012-07-19 sykim70
 void ReleaseIPC()
 {
-#if defined(PLATFORM_WIN32)
-	XExtIPCManager<IPCEventInfo> IPCMgr;
-	for (int retry = 3; retry > 0; retry--)
-	{
-		int Ret = IPCMgr.XExtIPCEventCreate(1, FALSE);
-		if (Ret == 0)
-		{
-			IPCEventInfo EventInfo;
-			EventInfo.EventID = -1;
-			IPCMgr.XExtIPCEventPost(&EventInfo);
-			IPCMgr.XExtIPCEventRelease(FALSE);
-			break;
-		}
-		Sleep(500);
-	}
-#endif
+	NkspReleaseIPCBridge();
 }
 
 // 2012-07-19 sykim70

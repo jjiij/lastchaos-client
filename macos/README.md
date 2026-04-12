@@ -8,6 +8,7 @@
 | `client-source/scripts/package_full_macos_app.sh` | Full game bundle: native client + **entire** `Data/` tree under `Contents/Resources/Game/` |
 | `client-source/scripts/build_full_macos_app.sh` | Same as above with **checks**, optional `.lastchaos_full_bundle.env`, optional `LASTCHAOS_CREATE_DMG=1` |
 | `client-source/scripts/create_macos_dmg.sh` | Pack `LastChaos.app` into a **single-file** `LastChaos.dmg` for distribution |
+| `client-source/scripts/validate_macos_bundle.sh` | Run host-side signed-bundle checks and emit per-host validation report (`bundle_validation_<arch>.txt`) |
 
 Output location (default):
 
@@ -16,6 +17,11 @@ Output location (default):
 ## Code signing (local)
 
 After the bundle is assembled, `sign_macos_app_bundle` runs **`codesign`** on macOS so Finder and Gatekeeper are less likely to block launch.
+`package_full_macos_app.sh` also prints a post-package verification summary:
+
+- `codesign --verify --verbose=2 LastChaos.app`
+- `codesign --display --verbose=2 LastChaos.app`
+- `spctl --assess --type execute --verbose=4 LastChaos.app` (when `spctl` is available)
 
 | Variable | Default | Meaning |
 |----------|---------|---------|
@@ -45,6 +51,49 @@ Login servers are read from `sl.dta` next to that game data (engine uses `_fnmAp
 
 - `LASTCHAOS_CLIENT_BINARY` — path to the native macOS game executable  
 - `LASTCHAOS_ASSET_ROOT` — directory whose contents include `Data/` (maps, textures, etc.)
+- `LASTCHAOS_MACOS_ARCHS` — CMake `CMAKE_OSX_ARCHITECTURES` value (default: `x86_64;arm64`)
+
+### Universal binary checks (`build_full_macos_app.sh`)
+
+- `build_full_macos_app.sh` validates `LASTCHAOS_CLIENT_BINARY` architectures with `lipo` when available.
+- Default required architecture list is `x86_64;arm64`.
+- Override with:
+  - `LASTCHAOS_EXPECT_CLIENT_ARCHS` (explicit required list), or
+  - `LASTCHAOS_MACOS_ARCHS` (used as fallback expected list).
+
+### Generated-header preflight (`build_full_macos_app.sh`)
+
+- `build_full_macos_app.sh` now runs:
+  1. `scripts/generate_entitiesmp_headers.sh`
+  2. `scripts/check_generated_headers.sh`
+  before packaging.
+- The check fails if temporary placeholder markers are detected in generated-header locations (for example, stubbed `EntitiesMP` headers), so full macOS bundles do not silently ship with compile-only scaffolding.
+- For intentional bring-up/debug packaging only, you can bypass with:
+  - `LASTCHAOS_ALLOW_PLACEHOLDER_HEADERS=1`
+
+
+### Host validation (Intel + Apple Silicon)
+
+After packaging, run on each macOS host architecture:
+
+```bash
+./scripts/validate_macos_bundle.sh build/macos/LastChaos.app
+```
+
+This captures:
+
+- binary architecture validation (`lipo`)
+- `codesign --verify` + `codesign --display`
+- Gatekeeper assessment (`spctl`, when available)
+- bundled `sl.dta` and `Data/` presence checks
+
+Optional login smoke execution can be attached to the validation report by setting:
+
+```bash
+LASTCHAOS_RUN_LOGIN_SMOKE=1 \
+LASTCHAOS_LOGIN_SMOKE_CMD='open -a Terminal build/macos/LastChaos.app' \
+./scripts/validate_macos_bundle.sh build/macos/LastChaos.app
+```
 
 ### Single downloadable file
 
@@ -56,9 +105,33 @@ macOS does not ship one monolithic “exe”; the standard pattern is a **`.dmg`
 
 produces `build/macos/LastChaos.dmg` by default.
 
+## Cross-platform non-regression checklist (macOS porting PRs)
+
+Run these commands in addition to macOS packaging checks so Windows/Linux baselines stay visible while macOS work continues:
+
+### Linux x64 probe build
+
+```bash
+cmake -S . -B build/linux -G "Unix Makefiles"
+cmake --build build/linux --target lastchaos_porting_probe -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)"
+```
+
+### Windows x64 baseline build (from Windows host/runner)
+
+```powershell
+cmake -S . -B build\win64 -G "Visual Studio 17 2022" -A x64
+cmake --build build\win64 --config Release --target lastchaos_porting_probe lastchaos_login_check
+```
+
 ## Double-click opens Terminal
 
 The app’s main executable is a small script that runs `LastChaosInner.command` in **Terminal.app**, so you see login-check output and prompts. A raw CLI binary as `CFBundleExecutable` exits with no visible window when launched from Finder.
+
+The launcher now also prints startup diagnostics for bring-up:
+
+- bundled Vulkan dylib presence under `Contents/Frameworks/`
+- `LC_GFX_API` environment hint
+- `DYLD_LIBRARY_PATH` value
 
 ## Minimal / launcher-only bundle
 

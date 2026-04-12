@@ -18,6 +18,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ENV_FILE="${ROOT_DIR}/.lastchaos_full_bundle.env"
+EXPECTED_ARCHS="${LASTCHAOS_EXPECT_CLIENT_ARCHS:-${LASTCHAOS_MACOS_ARCHS:-x86_64;arm64}}"
 
 if [[ -f "${ENV_FILE}" ]]; then
   set -a
@@ -68,6 +69,25 @@ fi
 if [[ ! -d "${LASTCHAOS_ASSET_ROOT}/Data" && ! -d "${LASTCHAOS_ASSET_ROOT}/data" ]]; then
   echo "LASTCHAOS_ASSET_ROOT must contain Data/ or data/: ${LASTCHAOS_ASSET_ROOT}" >&2
   exit 4
+fi
+
+"${ROOT_DIR}/scripts/generate_entitiesmp_headers.sh"
+"${ROOT_DIR}/scripts/check_generated_headers.sh"
+
+if command -v lipo >/dev/null 2>&1; then
+  BIN_ARCHS="$(lipo -archs "${LASTCHAOS_CLIENT_BINARY}" 2>/dev/null || true)"
+  if [[ -n "${BIN_ARCHS}" ]]; then
+    for arch in ${EXPECTED_ARCHS//;/ }; do
+      if [[ " ${BIN_ARCHS} " != *" ${arch} "* ]]; then
+        echo "Client binary arch check failed: expected '${arch}' in '${BIN_ARCHS}'." >&2
+        echo "Set LASTCHAOS_EXPECT_CLIENT_ARCHS to adjust required arch list if needed." >&2
+        exit 5
+      fi
+    done
+    echo "Client binary archs: ${BIN_ARCHS} (required: ${EXPECTED_ARCHS})"
+  else
+    echo "Warning: unable to read client binary architectures with lipo: ${LASTCHAOS_CLIENT_BINARY}" >&2
+  fi
 fi
 
 export LASTCHAOS_CLIENT_BINARY

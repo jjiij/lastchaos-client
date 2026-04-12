@@ -14,10 +14,12 @@ LC_LOGIN_HOST="${LASTCHAOS_LOGIN_HOST:-127.0.0.1}"
 LC_LOGIN_PORT="${LASTCHAOS_LOGIN_PORT:-4001}"
 LC_LOGIN_VERSION="${LASTCHAOS_LOGIN_VERSION:-1000}"
 LC_LOGIN_USERS="${LASTCHAOS_LOGIN_USERS:-300}"
+LC_MACOS_ARCHS="${LASTCHAOS_MACOS_ARCHS:-x86_64;arm64}"
 
 cmake -S "${ROOT_DIR}" -B "${BUILD_DIR}" -G "Unix Makefiles" \
   -DCMAKE_C_COMPILER=clang \
   -DCMAKE_CXX_COMPILER=clang++ \
+  -DCMAKE_OSX_ARCHITECTURES="${LC_MACOS_ARCHS}" \
   -DLASTCHAOS_LOGIN_NAME="${LC_LOGIN_NAME}" \
   -DLASTCHAOS_LOGIN_HOST="${LC_LOGIN_HOST}" \
   -DLASTCHAOS_LOGIN_PORT="${LC_LOGIN_PORT}" \
@@ -44,7 +46,15 @@ else
   install_macos_terminal_launcher "${APP_DIR}" "${BUILD_DIR}/porting/lastchaos_login_check"
 fi
 
-install_sl_dta_for_bundle "${APP_DIR}" "${BUILD_DIR}/porting/sl.dta"
+SL_DTA_PATH="${BUILD_DIR}/porting/sl.dta"
+if [[ ! -f "${SL_DTA_PATH}" ]]; then
+  echo "Warning: ${SL_DTA_PATH} missing (Go generator unavailable); writing fallback sl.dta from LASTCHAOS_LOGIN_* env." >&2
+  mkdir -p "$(dirname "${SL_DTA_PATH}")"
+  cat > "${SL_DTA_PATH}" <<EOF
+${LC_LOGIN_NAME}	${LC_LOGIN_HOST}	${LC_LOGIN_PORT}	${LC_LOGIN_VERSION}	${LC_LOGIN_USERS}
+EOF
+fi
+install_sl_dta_for_bundle "${APP_DIR}" "${SL_DTA_PATH}"
 install_macos_vulkan_runtime_if_available "${APP_DIR}" "${LASTCHAOS_MOLTENVK_DYLIB:-}"
 
 sign_macos_app_bundle "${APP_DIR}"
@@ -70,6 +80,9 @@ ${APP_DIR}/Contents/Frameworks/libvulkan.1.dylib
 
 Login endpoint entry:
 ${LC_LOGIN_NAME} ${LC_LOGIN_HOST}:${LC_LOGIN_PORT} (ver=${LC_LOGIN_VERSION}, users=${LC_LOGIN_USERS})
+
+Requested macOS architectures (CMake):
+${LC_MACOS_ARCHS}
 EOF
 
 if [[ -d "${APP_DIR}/Contents/Resources/Game/Data" || -d "${APP_DIR}/Contents/Resources/Game/data" ]]; then

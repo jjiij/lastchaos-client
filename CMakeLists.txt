@@ -20,6 +20,11 @@ if(LASTCHAOS_ENABLE_NKSP_PROBE)
   add_subdirectory(Nksp_probe)
 endif()
 
+option(LASTCHAOS_ENABLE_NKSP_NATIVE_BLUEPRINT "Configure native Nksp target blueprint for link-closure work" OFF)
+if(LASTCHAOS_ENABLE_NKSP_NATIVE_BLUEPRINT)
+  add_subdirectory(Nksp_native)
+endif()
+
 # Add the Vulkan components (This part needs refinement based on actual Vulkan build system)
 # We need to figure out how to build dxvk, vkcommon, and related Vulkan code.
 # For now, let's assume we can find CMakeLists.txt for them or will add them later.
