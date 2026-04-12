@@ -30,11 +30,65 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
+      - name: Install MFC/ATL Components
+        shell: pwsh
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $installer = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe"
+          if (!(Test-Path $vswhere)) { throw "vswhere not found: $vswhere" }
+          if (!(Test-Path $installer)) { throw "vs_installer not found: $installer" }
+
+          $installPath = & $vswhere -latest -products * -property installationPath
+          if ([string]::IsNullOrWhiteSpace($installPath)) { throw "No Visual Studio installation found" }
+
+          Write-Host "Installing MFC/ATL components into: $installPath"
+          & $installer modify --installPath "$installPath" --add Microsoft.VisualStudio.Component.VC.ATLMFC --add Microsoft.VisualStudio.Component.VC.ATL --passive --norestart --wait
+          if ($LASTEXITCODE -ne 0) { throw "vs_installer failed with exit code $LASTEXITCODE" }
+
+      - name: Build ECC Compiler
+        shell: pwsh
+        run: |
+          $eccDir = "_deps/ecc"
+          if (Test-Path $eccDir) {
+            Remove-Item -Recurse -Force $eccDir
+          }
+
+          git clone --depth 1 https://github.com/Serious-Engine/Ecc.git $eccDir
+          if ($LASTEXITCODE -ne 0) { throw "Failed to clone Serious-Engine/Ecc" }
+          if (!(Test-Path "$eccDir/Ecc.vcxproj")) { throw "Ecc.vcxproj not found in $eccDir" }
+
+          msbuild "$eccDir/Ecc.vcxproj" /m /t:Build /p:Configuration=Release /p:Platform=Win32 /p:PreferredToolArchitecture=x64
+          if ($LASTEXITCODE -ne 0) { throw "Failed to build ECC compiler" }
+
+          $found = $null
+          $candidates = @(
+            "$eccDir/Release/Ecc.exe",
+            "$eccDir/x64/Release/Ecc.exe",
+            "$eccDir/Win32/Release/Ecc.exe"
+          )
+          foreach ($candidate in $candidates) {
+            if (Test-Path $candidate) {
+              $found = $candidate
+              break
+            }
+          }
+          if (-not $found) {
+            $discovered = Get-ChildItem -Path $eccDir -Filter "Ecc.exe" -Recurse | Select-Object -First 1
+            if ($discovered) {
+              $found = $discovered.FullName
+            }
+          }
+          if (-not $found) { throw "Built ECC executable not found under $eccDir" }
+
+          New-Item -ItemType Directory -Path "Tools.Win32" -Force | Out-Null
+          Copy-Item -Path $found -Destination "Tools.Win32/ecc.exe" -Force
+          Write-Host "Using ECC: Tools.Win32/ecc.exe"
+
       - name: Build solution
         working-directory: source
         shell: cmd
         run: |
-          msbuild LCClient.sln /m /t:Build /p:Configuration=LCRelease /p:Platform=${{ matrix.platform }} /p:PreferredToolArchitecture=x64
+          msbuild LCClient.sln /m /p:Configuration=LCRelease /p:Platform=${{ matrix.platform }} /p:PreferredToolArchitecture=x64 /t:Common;LCCrypt;CWebPage;Nksp;Shaders;Engine;EntitiesMP;GameMP
 
       - name: Create Windows setup bundle
         shell: pwsh
