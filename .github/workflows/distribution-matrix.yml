@@ -1,0 +1,126 @@
+name: Build Distribution Bundles
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  dist-linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assert legacy workflow removed
+        run: ./scripts/assert_no_legacy_workflows.sh
+      - uses: actions/checkout@v4
+        with:
+          repository: jjiij/lastchaos-client-assets
+          path: assets
+      - name: Configure Linux probes
+        run: cmake -S . -B build/linux-dist -G "Unix Makefiles"
+      - name: Build Linux launcher binary
+        run: cmake --build build/linux-dist --target lastchaos_login_check -j "$(nproc)"
+      - name: Stage Linux distribution
+        run: |
+          ./scripts/build_distribution_bundle.sh \
+            --platform linux \
+            --assets-root "$PWD/assets" \
+            --runtime-root "$PWD/build/linux-dist/porting" \
+            --archive
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lastchaos-linux-distribution
+          path: build/dist/archives/lastchaos-linux.*
+      - name: Publish Linux nightly release asset
+        if: github.event_name == "push" && (github.ref_name == "main" || github.ref_name == "master")
+        uses: ncipollo/release-action@v1
+        with:
+          tag: nightly
+          name: Nightly Distribution Bundles
+          allowUpdates: true
+          prerelease: true
+          artifacts: "build/dist/archives/lastchaos-linux.zip,build/dist/archives/lastchaos-linux.tar.gz"
+          artifactErrorsFailBuild: false
+
+  dist-windows:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assert legacy workflow removed
+        shell: bash
+        run: ./scripts/assert_no_legacy_workflows.sh
+      - uses: actions/checkout@v4
+        with:
+          repository: jjiij/lastchaos-client-assets
+          path: assets
+      - name: Configure Windows baseline
+        shell: bash
+        run: cmake -S . -B build/win64 -G "Visual Studio 17 2022" -A x64
+      - name: Build Windows baseline probes
+        shell: bash
+        run: cmake --build build/win64 --config Release --target lastchaos_porting_probe lastchaos_login_check
+      - name: Stage Windows distribution
+        shell: bash
+        run: |
+          ./scripts/build_distribution_bundle.sh \
+            --platform windows \
+            --assets-root "$PWD/assets" \
+            --archive
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lastchaos-windows-distribution
+          path: build/dist/archives/lastchaos-windows.*
+      - name: Publish Windows nightly release asset
+        if: github.event_name == "push" && (github.ref_name == "main" || github.ref_name == "master")
+        uses: ncipollo/release-action@v1
+        with:
+          tag: nightly
+          name: Nightly Distribution Bundles
+          allowUpdates: true
+          prerelease: true
+          artifacts: "build/dist/archives/lastchaos-windows.zip,build/dist/archives/lastchaos-windows.tar.gz"
+          artifactErrorsFailBuild: false
+
+  dist-macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assert legacy workflow removed
+        run: ./scripts/assert_no_legacy_workflows.sh
+      - uses: actions/checkout@v4
+        with:
+          repository: jjiij/lastchaos-client-assets
+          path: assets
+      - name: Configure macOS launcher target
+        run: cmake -S . -B build/macos -G "Unix Makefiles" -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+      - name: Build macOS launcher binary
+        run: cmake --build build/macos --target lastchaos_login_check -j "$(sysctl -n hw.ncpu)"
+      - name: Build minimal macOS app bundle
+        run: ./scripts/build_macos_app.sh
+      - name: Stage macOS distribution
+        run: |
+          ./scripts/build_distribution_bundle.sh \
+            --platform macos \
+            --assets-root "$PWD/assets" \
+            --runtime-root "$PWD/build/macos" \
+            --archive
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lastchaos-macos-distribution
+          path: build/dist/archives/lastchaos-macos.*
+      - name: Publish macOS nightly release asset
+        if: github.event_name == "push" && (github.ref_name == "main" || github.ref_name == "master")
+        uses: ncipollo/release-action@v1
+        with:
+          tag: nightly
+          name: Nightly Distribution Bundles
+          allowUpdates: true
+          prerelease: true
+          artifacts: "build/dist/archives/lastchaos-macos.zip,build/dist/archives/lastchaos-macos.tar.gz"
+          artifactErrorsFailBuild: false
