@@ -23,6 +23,8 @@ install_macos_terminal_launcher() {
 set -euo pipefail
 DIR="$(cd "$(dirname "$0")" && pwd)"
 GAME="${DIR}/../Resources/Game"
+APP_ROOT="$(cd "${DIR}/.." && pwd)"
+FRAMEWORKS="${APP_ROOT}/Frameworks"
 printf '\033]0;LastChaos\007'
 echo "LastChaos"
 echo "----------------------------------------"
@@ -35,6 +37,13 @@ else
   echo "  ${GAME}/"
   echo "(see client-source/game-assets/README.txt)"
 fi
+if [[ -f "${FRAMEWORKS}/libvulkan.1.dylib" ]]; then
+  echo "Bundled Vulkan runtime: ${FRAMEWORKS}/libvulkan.1.dylib"
+else
+  echo "Bundled Vulkan runtime: not found in ${FRAMEWORKS}"
+fi
+echo "Requested gfx API hint (LC_GFX_API): ${LC_GFX_API:-auto}"
+echo "DYLD_LIBRARY_PATH: ${DYLD_LIBRARY_PATH:-<unset>}"
 echo "----------------------------------------"
 "${DIR}/LastChaosLauncher.bin" 2>&1 || true
 echo "----------------------------------------"

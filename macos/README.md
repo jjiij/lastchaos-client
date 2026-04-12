@@ -102,6 +102,12 @@ cmake --build build\win64 --config Release --target GameMP
 
 The app’s main executable is a small script that runs `LastChaosInner.command` in **Terminal.app**, so you see login-check output and prompts. A raw CLI binary as `CFBundleExecutable` exits with no visible window when launched from Finder.
 
+The launcher now also prints startup diagnostics for bring-up:
+
+- bundled Vulkan dylib presence under `Contents/Frameworks/`
+- `LC_GFX_API` environment hint
+- `DYLD_LIBRARY_PATH` value
+
 ## Minimal / launcher-only bundle
 
 `build_macos_app.sh` supports:

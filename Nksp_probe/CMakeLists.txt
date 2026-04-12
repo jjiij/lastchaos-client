@@ -3,6 +3,7 @@ option(LASTCHAOS_NKSP_STRICT_LINK "Disable permissive unresolved-link flags for 
 
 add_executable(nksp_probe
   "${NKSP_SRC_DIR}/Nksp/Nksp.cpp"
+  "${NKSP_SRC_DIR}/Nksp/NkspPlatformAdapters.cpp"
   "${NKSP_SRC_DIR}/Engine/Engine.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/stubs.cpp"
 )
