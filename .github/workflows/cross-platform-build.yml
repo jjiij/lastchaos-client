@@ -57,7 +57,12 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Failed to clone Serious-Engine/Ecc" }
           if (!(Test-Path "$eccDir/Ecc.vcxproj")) { throw "Ecc.vcxproj not found in $eccDir" }
 
-          msbuild "$eccDir/Ecc.vcxproj" /m /t:Build /p:Configuration=Release /p:Platform=Win32 /p:PreferredToolArchitecture=x64
+          # Retarget legacy toolset (v120) to the VS2022 toolset available on runner.
+          (Get-Content "$eccDir/Ecc.vcxproj" -Raw).
+            Replace("<PlatformToolset>v120</PlatformToolset>", "<PlatformToolset>v142</PlatformToolset>") |
+            Set-Content "$eccDir/Ecc.vcxproj" -Encoding utf8
+
+          msbuild "$eccDir/Ecc.vcxproj" /m /t:Build /p:Configuration=Release /p:Platform=Win32 /p:PreferredToolArchitecture=x64 /p:PlatformToolset=v142
           if ($LASTEXITCODE -ne 0) { throw "Failed to build ECC compiler" }
 
           $found = $null
