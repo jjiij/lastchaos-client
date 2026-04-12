@@ -122,3 +122,36 @@ jobs:
             build/*/nksp_unresolved_symbols_summary.txt
             build/*/nksp_unresolved_symbols_by_subsystem.txt
             build/*/nksp_unresolved_symbols_subsystem_summary.txt
+
+  publish-release:
+    name: Publish Release Asset
+    needs: [windows-x64, linux-x64, macos-x64, macos-arm64]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v2
+
+      - name: Build full macOS client (universal)
+        run: |
+          cmake -S . -B build/release -G "Unix Makefiles" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DLASTCHAOS_BUILD_FULL_CLIENT=ON
+          cmake --build build/release --target LastChaos.app -j "$(nproc)"
+
+      - name: Package DMG
+        run: |
+          chmod +x ./scripts/package_full_macos_app.sh
+          ./scripts/package_full_macos_app.sh
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.sha }}
+          files: build/macos/LastChaos.dmg
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
