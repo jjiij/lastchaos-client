@@ -58,6 +58,10 @@
 #include <float.h>
 #ifdef PLATFORM_WIN32
 #include <SharedMemory/Ext_ipc_event.h> // IPC
+#else
+#include <errno.h>
+#include <sys/file.h>
+#include <unistd.h>
 #endif
 HWND g_parenthWnd = NULL;
 ENGINE_API extern cWeb g_web;
@@ -429,6 +433,23 @@ BOOL IsRunning(void)
 
 	return FALSE;
 #else
+	static int s_unixSingleInstanceFd = -1;
+	if (s_unixSingleInstanceFd == -1) {
+		const char* lockPath = "/tmp/lastchaos_nksp.lock";
+		s_unixSingleInstanceFd = open(lockPath, O_CREAT | O_RDWR, 0644);
+		if (s_unixSingleInstanceFd < 0) {
+			CPrintF(TRANS("WARNING: failed to open single-instance lock %s (errno=%d)\n"), lockPath, errno);
+			return FALSE;
+		}
+	}
+
+	if (flock(s_unixSingleInstanceFd, LOCK_EX | LOCK_NB) != 0) {
+		if (errno == EWOULDBLOCK) {
+			CPrintF(TRANS("LastChaos appears to be running already (unix lock active).\n"));
+			return TRUE;
+		}
+		CPrintF(TRANS("WARNING: flock single-instance check failed (errno=%d)\n"), errno);
+	}
 	return FALSE;
 #endif
 }

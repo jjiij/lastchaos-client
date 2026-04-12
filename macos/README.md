@@ -60,6 +60,16 @@ Login servers are read from `sl.dta` next to that game data (engine uses `_fnmAp
   - `LASTCHAOS_EXPECT_CLIENT_ARCHS` (explicit required list), or
   - `LASTCHAOS_MACOS_ARCHS` (used as fallback expected list).
 
+### Generated-header preflight (`build_full_macos_app.sh`)
+
+- `build_full_macos_app.sh` now runs:
+  1. `scripts/generate_entitiesmp_headers.sh`
+  2. `scripts/check_generated_headers.sh`
+  before packaging.
+- The check fails if temporary placeholder markers are detected in generated-header locations (for example, stubbed `EntitiesMP` headers), so full macOS bundles do not silently ship with compile-only scaffolding.
+- For intentional bring-up/debug packaging only, you can bypass with:
+  - `LASTCHAOS_ALLOW_PLACEHOLDER_HEADERS=1`
+
 ### Single downloadable file
 
 macOS does not ship one monolithic “exe”; the standard pattern is a **`.dmg`** containing `LastChaos.app`. After `package_full_macos_app.sh`:
