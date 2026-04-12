@@ -1,4 +1,4 @@
-name: Cross Platform Dist Build And GoFile Publish
+name: Windows Dist Build And Release Upload
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     types: [published]
 
 concurrency:
-  group: cross-platform-dist-${{ github.ref }}
+  group: windows-dist-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -55,222 +55,61 @@ jobs:
           if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
           Compress-Archive -Path "$bundleDir/*" -DestinationPath $zipPath -CompressionLevel Optimal
 
-      - name: Upload artifact
-        if: github.event_name != 'push'
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-${{ matrix.suffix }}-bundle
-          path: dist/lastchaos-windows-${{ matrix.suffix }}-setup-bundle.zip
-          if-no-files-found: error
-          retention-days: 1
-
-  build-linux:
-    name: Build Linux Bundle (${{ matrix.arch }})
-    runs-on: ubuntu-22.04
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - arch: x64
-            suffix: x64
-            cmake_flags: ""
-          - arch: x86
-            suffix: x86
-            cmake_flags: "-DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32 -DCMAKE_EXE_LINKER_FLAGS=-m32"
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install toolchain
+      - name: Split bundle for GitHub release assets
+        shell: pwsh
         run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake ninja-build g++ gcc g++-multilib gcc-multilib libc6-dev-i386 make tar
+          $dist = "dist"
+          $zipPath = Join-Path $dist "lastchaos-windows-${{ matrix.suffix }}-setup-bundle.zip"
+          if (!(Test-Path $zipPath)) { throw "Expected ZIP missing: $zipPath" }
 
-      - name: Configure and build
-        run: |
-          cmake -S . -B build/linux-${{ matrix.suffix }} -G "Unix Makefiles" ${{ matrix.cmake_flags }}
-          cmake --build build/linux-${{ matrix.suffix }} --target lastchaos_porting_probe lastchaos_login_check -j"$(nproc)"
+          # Keep each release asset below GitHub's per-file size limit.
+          $partSizeBytes = 1900MB
+          $bufferSize = 4MB
+          $partIndex = 1
 
-      - name: Create Linux bundle
-        run: |
-          set -euo pipefail
-          dist="dist"
-          bundle_dir="${dist}/lastchaos-linux-${{ matrix.suffix }}-bundle"
-          mkdir -p "${bundle_dir}"
+          $source = [System.IO.File]::OpenRead($zipPath)
+          try {
+            while ($source.Position -lt $source.Length) {
+              $partPath = "{0}.part{1:D2}" -f $zipPath, $partIndex
+              $part = [System.IO.File]::Create($partPath)
+              try {
+                $remainingInPart = $partSizeBytes
+                $buffer = New-Object byte[] $bufferSize
+                while ($remainingInPart -gt 0 -and $source.Position -lt $source.Length) {
+                  $toRead = [int][Math]::Min($bufferSize, [Math]::Min($remainingInPart, $source.Length - $source.Position))
+                  $read = $source.Read($buffer, 0, $toRead)
+                  if ($read -le 0) { break }
+                  $part.Write($buffer, 0, $read)
+                  $remainingInPart -= $read
+                }
+              }
+              finally {
+                $part.Dispose()
+              }
+              $partIndex++
+            }
+          }
+          finally {
+            $source.Dispose()
+          }
 
-          cp -f build/linux-${{ matrix.suffix }}/porting/lastchaos_login_check "${bundle_dir}/"
-          cp -f build/linux-${{ matrix.suffix }}/porting/lastchaos_porting_probe "${bundle_dir}/"
-          if [ -f build/linux-${{ matrix.suffix }}/porting/sl.dta ]; then
-            cp -f build/linux-${{ matrix.suffix }}/porting/sl.dta "${bundle_dir}/"
-          fi
-
-          tar -C "${dist}" -czf "${dist}/lastchaos-linux-${{ matrix.suffix }}-bundle.tar.gz" "lastchaos-linux-${{ matrix.suffix }}-bundle"
+          Get-ChildItem -Path "$zipPath.part*" | Sort-Object Name | ForEach-Object {
+            Write-Host ("Created split asset: {0} ({1} bytes)" -f $_.Name, $_.Length)
+          }
 
       - name: Upload artifact
         if: github.event_name != 'push'
         uses: actions/upload-artifact@v4
         with:
-          name: linux-${{ matrix.suffix }}-bundle
-          path: dist/lastchaos-linux-${{ matrix.suffix }}-bundle.tar.gz
+          name: windows-${{ matrix.suffix }}-bundle-parts
+          path: dist/lastchaos-windows-${{ matrix.suffix }}-setup-bundle.zip.part*
           if-no-files-found: error
           retention-days: 1
 
-  build-macos:
-    name: Build macOS Bundle
-    runs-on: macos-13
-    env:
-      LASTCHAOS_MACOS_ARCHS: x86_64
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install build tools
-        run: |
-          brew update
-          brew install cmake go || true
-
-      - name: Build macOS app bundle
-        run: |
-          chmod +x platform/macos/scripts/build_macos_app.sh
-          platform/macos/scripts/build_macos_app.sh
-
-      - name: Create DMG
-        run: |
-          chmod +x platform/macos/scripts/create_macos_dmg.sh
-          platform/macos/scripts/create_macos_dmg.sh
-
-      - name: Upload app artifact
-        if: github.event_name != 'push'
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-app
-          path: build/macos/LastChaos.app
-          if-no-files-found: error
-          retention-days: 1
-
-      - name: Upload dmg artifact
-        if: github.event_name != 'push'
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-dmg
-          path: build/macos/LastChaos.dmg
-          if-no-files-found: error
-          retention-days: 1
-
-  publish-gofile:
-    name: Upload All Dist Files To GoFile
-    if: github.event_name != 'push'
-    needs: [build-windows, build-linux, build-macos]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: dist_artifacts
-
-      - name: Install publish dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y jq
-
-      - name: List artifacts
-        run: find dist_artifacts -type f | sort
-
-      - name: Upload dist files to GoFile
-        env:
-          GOFILE_API_TOKEN: ${{ secrets.GOFILE_API_TOKEN }}
-          GOFILE_FOLDER_ID: ${{ secrets.GOFILE_FOLDER_ID }}
-        run: |
-          set -euo pipefail
-
-          if [ -z "${GOFILE_API_TOKEN:-}" ]; then
-            echo "GOFILE_API_TOKEN secret is missing"
-            exit 1
-          fi
-
-          mapfile -t files < <(find dist_artifacts -type f \( -name '*.zip' -o -name '*.tar.gz' -o -name '*.dmg' \) | sort)
-          if [ "${#files[@]}" -eq 0 ]; then
-            echo "No distributable files found"
-            exit 1
-          fi
-
-          echo "## GoFile Downloads" > gofile_links.md
-          echo >> gofile_links.md
-
-          for f in "${files[@]}"; do
-            echo "Uploading ${f}"
-            curl_args=(
-              -sS
-              -H "Authorization: Bearer ${GOFILE_API_TOKEN}"
-              -F "token=${GOFILE_API_TOKEN}"
-              -F "file=@${f}"
-            )
-            if [ -n "${GOFILE_FOLDER_ID:-}" ]; then
-              curl_args+=(-F "folderId=${GOFILE_FOLDER_ID}")
-            fi
-            curl_args+=(https://api.gofile.io/uploadFile)
-            response="$(curl "${curl_args[@]}")"
-
-            status="$(printf '%s' "${response}" | jq -r '.status // empty')"
-            page="$(printf '%s' "${response}" | jq -r '.data.downloadPage // empty')"
-            if [ "${status}" != "ok" ] || [ -z "${page}" ]; then
-              echo "GoFile upload failed for ${f}"
-              echo "${response}"
-              exit 1
-            fi
-
-            name="$(basename "${f}")"
-            echo "- ${name}: ${page}" >> gofile_links.md
-          done
-
-          cat gofile_links.md
-
-      - name: Upload GoFile links artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: gofile-links
-          path: gofile_links.md
-          retention-days: 1
-
-      - name: Append GoFile links to GitHub release body
+      - name: Upload split assets to GitHub Release
         if: github.event_name == 'release'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RELEASE_ID: ${{ github.event.release.id }}
-          REPO: ${{ github.repository }}
-        run: |
-          set -euo pipefail
-
-          existing="$(gh api "repos/${REPO}/releases/${RELEASE_ID}" --jq '.body // ""')"
-          links="$(cat gofile_links.md)"
-
-          if printf '%s' "${existing}" | grep -q "^## GoFile Downloads$"; then
-            cleaned="$(
-              printf '%s\n' "${existing}" | awk '
-                BEGIN { in_section=0 }
-                /^## GoFile Downloads$/ { in_section=1; next }
-                /^## / && in_section==1 { in_section=0 }
-                in_section==0 { print }
-              '
-            )"
-            if [ -n "${cleaned}" ]; then
-              new_body="${cleaned}"$'\n\n'"${links}"
-            else
-              new_body="${links}"
-            fi
-          else
-            if [ -n "${existing}" ]; then
-              new_body="${existing}"$'\n\n'"${links}"
-            else
-              new_body="${links}"
-            fi
-          fi
-
-          gh api "repos/${REPO}/releases/${RELEASE_ID}" \
-            -X PATCH \
-            -f body="${new_body}"
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/lastchaos-windows-${{ matrix.suffix }}-setup-bundle.zip.part*
+          fail_on_unmatched_files: true
