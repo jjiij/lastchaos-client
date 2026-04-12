@@ -71,6 +71,9 @@ if [[ ! -d "${LASTCHAOS_ASSET_ROOT}/Data" && ! -d "${LASTCHAOS_ASSET_ROOT}/data"
   exit 4
 fi
 
+"${ROOT_DIR}/scripts/generate_entitiesmp_headers.sh"
+"${ROOT_DIR}/scripts/check_generated_headers.sh"
+
 if command -v lipo >/dev/null 2>&1; then
   BIN_ARCHS="$(lipo -archs "${LASTCHAOS_CLIENT_BINARY}" 2>/dev/null || true)"
   if [[ -n "${BIN_ARCHS}" ]]; then

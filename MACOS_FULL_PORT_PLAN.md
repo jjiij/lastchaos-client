@@ -2,6 +2,20 @@
 
 Date: 2026-04-11
 
+## Recent Progress (2026-04-11)
+
+- Added full-package preflight `scripts/check_generated_headers.sh` and wired it into `scripts/build_full_macos_app.sh`.
+- Full macOS packaging now fails early when placeholder generated headers are detected, with a documented escape hatch (`LASTCHAOS_ALLOW_PLACEHOLDER_HEADERS=1`) for compile-only bring-up.
+- Added host-side validation helper `scripts/validate_porting_matrix.sh` to run Linux/macOS probe checks and print Windows baseline commands.
+- Added `scripts/report_nksp_unresolved_symbols.sh` and hooked it into matrix validation to track unresolved-symbol closure for `nksp_probe`.
+- Lowered `porting/CMakeLists.txt` minimum CMake version to `3.21` to match the repo root and unblock Linux/macOS probe validation on standard toolchains.
+- Added strict `nksp_probe` link mode toggle (`LASTCHAOS_NKSP_STRICT_LINK`) so unresolved-symbol closure can be enforced in validation runs.
+- Added deterministic `EntitiesMP` header generation script (`scripts/generate_entitiesmp_headers.sh`) and integrated it into full macOS build preflight.
+- Added `Nksp` non-Windows single-instance adapter (`NkspPlatformAdapters`) so process-lock behavior is isolated from Win32 ToolHelp logic.
+- Extended unresolved-symbol reporting with subsystem buckets (engine/gameplay, rendering, IPC/process, launcher/entry).
+- Added optional native `Nksp` CMake blueprint target (`lastchaos_nksp_native_blueprint`) for dedicated link-closure iteration.
+- Added launcher startup diagnostics for bundled Vulkan runtime path and gfx environment hints.
+
 ## Goal
 
 Ship a **fully runnable native macOS client** (x86_64 + arm64, ideally universal) from this repository while preserving Windows x64 and Linux x64 compatibility.

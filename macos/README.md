@@ -16,6 +16,11 @@ Output location (default):
 ## Code signing (local)
 
 After the bundle is assembled, `sign_macos_app_bundle` runs **`codesign`** on macOS so Finder and Gatekeeper are less likely to block launch.
+`package_full_macos_app.sh` also prints a post-package verification summary:
+
+- `codesign --verify --verbose=2 LastChaos.app`
+- `codesign --display --verbose=2 LastChaos.app`
+- `spctl --assess --type execute --verbose=4 LastChaos.app` (when `spctl` is available)
 
 | Variable | Default | Meaning |
 |----------|---------|---------|
@@ -55,6 +60,16 @@ Login servers are read from `sl.dta` next to that game data (engine uses `_fnmAp
   - `LASTCHAOS_EXPECT_CLIENT_ARCHS` (explicit required list), or
   - `LASTCHAOS_MACOS_ARCHS` (used as fallback expected list).
 
+### Generated-header preflight (`build_full_macos_app.sh`)
+
+- `build_full_macos_app.sh` now runs:
+  1. `scripts/generate_entitiesmp_headers.sh`
+  2. `scripts/check_generated_headers.sh`
+  before packaging.
+- The check fails if temporary placeholder markers are detected in generated-header locations (for example, stubbed `EntitiesMP` headers), so full macOS bundles do not silently ship with compile-only scaffolding.
+- For intentional bring-up/debug packaging only, you can bypass with:
+  - `LASTCHAOS_ALLOW_PLACEHOLDER_HEADERS=1`
+
 ### Single downloadable file
 
 macOS does not ship one monolithic “exe”; the standard pattern is a **`.dmg`** containing `LastChaos.app`. After `package_full_macos_app.sh`:
@@ -65,9 +80,46 @@ macOS does not ship one monolithic “exe”; the standard pattern is a **`.dmg`
 
 produces `build/macos/LastChaos.dmg` by default.
 
+## Cross-platform non-regression checklist (macOS porting PRs)
+
+Run these commands in addition to macOS packaging checks so Windows/Linux baselines stay visible while macOS work continues:
+
+### One-command host validation helper
+
+```bash
+./scripts/validate_porting_matrix.sh
+```
+
+Notes:
+- On Linux/macOS hosts, this script runs configure + `lastchaos_porting_probe` + `lastchaos_login_check`.
+- On macOS, it also builds `nksp_probe` and emits unresolved-symbol reports (`nksp_unresolved_symbols*.txt`, including subsystem buckets).
+- You can turn on strict link closure checks with `LASTCHAOS_VALIDATE_NKSP_STRICT_LINK=1` (disables permissive unresolved-link fallback for `nksp_probe`).
+- You can additionally build the native target blueprint with `LASTCHAOS_VALIDATE_NKSP_NATIVE_BLUEPRINT=1`.
+- It prints explicit Windows x64 baseline commands for CI/manual execution on Windows runners.
+
+### Linux x64 probe build
+
+```bash
+cmake -S . -B build/linux -G "Unix Makefiles"
+cmake --build build/linux --target lastchaos_porting_probe -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)"
+```
+
+### Windows x64 baseline build (from Windows host/runner)
+
+```powershell
+cmake -S . -B build\win64 -G "Visual Studio 17 2022" -A x64
+cmake --build build\win64 --config Release --target GameMP
+```
+
 ## Double-click opens Terminal
 
 The app’s main executable is a small script that runs `LastChaosInner.command` in **Terminal.app**, so you see login-check output and prompts. A raw CLI binary as `CFBundleExecutable` exits with no visible window when launched from Finder.
+
+The launcher now also prints startup diagnostics for bring-up:
+
+- bundled Vulkan dylib presence under `Contents/Frameworks/`
+- `LC_GFX_API` environment hint
+- `DYLD_LIBRARY_PATH` value
 
 ## Minimal / launcher-only bundle
 

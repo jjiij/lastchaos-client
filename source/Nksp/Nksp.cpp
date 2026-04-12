@@ -59,6 +59,7 @@
 #ifdef PLATFORM_WIN32
 #include <SharedMemory/Ext_ipc_event.h> // IPC
 #endif
+#include "NkspPlatformAdapters.h"
 HWND g_parenthWnd = NULL;
 ENGINE_API extern cWeb g_web;
 extern ENGINE_API char *g_szExitError;
@@ -429,6 +430,15 @@ BOOL IsRunning(void)
 
 	return FALSE;
 #else
+	int adapterErrno = 0;
+	const int lockStatus = NkspCheckSingleInstanceUnix("/tmp/lastchaos_nksp.lock", &adapterErrno);
+	if (lockStatus > 0) {
+		CPrintF(TRANS("LastChaos appears to be running already (unix lock active).\n"));
+		return TRUE;
+	}
+	if (lockStatus < 0) {
+		CPrintF(TRANS("WARNING: unix single-instance adapter failed (errno=%d)\n"), adapterErrno);
+	}
 	return FALSE;
 #endif
 }

@@ -1,7 +1,9 @@
 set(NKSP_SRC_DIR "${CMAKE_SOURCE_DIR}/source")
+option(LASTCHAOS_NKSP_STRICT_LINK "Disable permissive unresolved-link flags for nksp_probe (used for link-closure work)" OFF)
 
 add_executable(nksp_probe
   "${NKSP_SRC_DIR}/Nksp/Nksp.cpp"
+  "${NKSP_SRC_DIR}/Nksp/NkspPlatformAdapters.cpp"
   "${NKSP_SRC_DIR}/Engine/Engine.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/stubs.cpp"
 )
@@ -50,6 +52,11 @@ target_link_libraries(nksp_probe PRIVATE
 # Allow the link step to succeed so CI can verify compilation; symbols resolve when
 # a full Engine dylib/static archive is wired in later.
 if(APPLE)
-  target_link_options(nksp_probe PRIVATE LINKER:-undefined,dynamic_lookup)
-  target_link_options(nksp_probe PRIVATE LINKER:-multiply_defined,suppress)
+  if(LASTCHAOS_NKSP_STRICT_LINK)
+    message(STATUS "nksp_probe strict link mode: ON (unresolved symbols are link errors)")
+  else()
+    message(STATUS "nksp_probe strict link mode: OFF (using dynamic unresolved-link fallback)")
+    target_link_options(nksp_probe PRIVATE LINKER:-undefined,dynamic_lookup)
+    target_link_options(nksp_probe PRIVATE LINKER:-multiply_defined,suppress)
+  endif()
 endif()
