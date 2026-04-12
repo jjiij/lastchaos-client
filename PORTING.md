@@ -38,7 +38,7 @@ Windows x64:
 
 ```powershell
 cmake -S . -B build\win64 -G "Visual Studio 17 2022" -A x64
-cmake --build build\win64 --config Release --target GameMP
+cmake --build build\win64 --config Release --target lastchaos_porting_probe lastchaos_login_check
 ```
 
 `validate_porting_matrix.sh` now enables strict `nksp_probe` linking by default on macOS.

@@ -120,7 +120,7 @@ cmake --build build/linux --target lastchaos_porting_probe -j"$(getconf _NPROCES
 
 ```powershell
 cmake -S . -B build\win64 -G "Visual Studio 17 2022" -A x64
-cmake --build build\win64 --config Release --target GameMP
+cmake --build build\win64 --config Release --target lastchaos_porting_probe lastchaos_login_check
 ```
 
 ## Double-click opens Terminal

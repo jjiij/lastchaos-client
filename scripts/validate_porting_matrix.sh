@@ -81,5 +81,5 @@ cmake --build build/linux-x64 --target lastchaos_porting_probe lastchaos_login_c
 
 == Windows x64 baseline commands (run on Windows host/CI) ==
 cmake -S . -B build\win64 -G "Visual Studio 17 2022" -A x64
-cmake --build build\win64 --config Release --target GameMP
+cmake --build build\win64 --config Release --target lastchaos_porting_probe lastchaos_login_check
 EOF
