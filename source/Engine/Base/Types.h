@@ -55,12 +55,10 @@ typedef int32_t SLONG;
 typedef int16_t SWORD;
 typedef int8_t  SBYTE;
 typedef int32_t SINT;
-typedef int64_t SQUAD;
 
 typedef uint32_t ULONG;
 typedef uint32_t ULONG32;
 typedef uint64_t ULONG64;
-typedef uint64_t UQUAD;
 typedef uint16_t UWORD;
 typedef uint8_t  UBYTE;
 typedef uint32_t UINT;
@@ -272,14 +270,13 @@ MY_STATIC_ASSERT(size_tSize, sizeof(size_t) == sizeof(void*));
 
     // !!! FIXME : Should inline functions go somewhere else?
 
-    inline char* _strupr(char *str)
+    inline void _strupr(char *str)
     {
         if (str != NULL)
         {
             for (char *ptr = str; *ptr; ptr++)
                *ptr = toupper(*ptr);
         }
-        return str;
     }
 
     inline ULONG rotl(ULONG ul, int bits)
@@ -312,8 +309,10 @@ MY_STATIC_ASSERT(size_tSize, sizeof(size_t) == sizeof(void*));
     }
 
     typedef uint64_t __uint64;
-    #if !defined(__int64)
+    #if (!defined __INTEL_COMPILER) && (!defined PLATFORM_FREEBSD) && (!defined PLATFORM_MACOSX)
       typedef int64_t __int64;
+    #elif (!defined PLATFORM_FREEBSD) && (!defined PLATFORM_MACOSX)
+      typedef long long int // #define __INT64_TYPE__ long long int
     #endif
 
     typedef char CHAR;
@@ -335,18 +334,12 @@ MY_STATIC_ASSERT(size_tSize, sizeof(size_t) == sizeof(void*));
     typedef void *HGLOBAL;  /* !!! FIXME this sucks. */
     typedef ULONG COLORREF;  /* !!! FIXME this sucks. */
 
-    #ifndef LC_SKIP_WIN_GEOM_TYPES
-#ifndef _POINT_DEFINED
-#define _POINT_DEFINED
     typedef struct
     {
         LONG x;
         LONG y;
     } POINT, *LPPOINT;
-#endif
 
-#ifndef _RECT_DEFINED
-#define _RECT_DEFINED
     typedef struct
     {
         LONG left;
@@ -354,16 +347,6 @@ MY_STATIC_ASSERT(size_tSize, sizeof(size_t) == sizeof(void*));
         LONG right;
         LONG bottom;
     } RECT;
-#endif
-    #endif
-
-    #ifndef DEVMODE
-    typedef struct
-    {
-        LONG dmDummy;
-    } DEVMODE;
-    #endif
-    typedef int SOCKET;
 
     #define WAVE_FORMAT_PCM  0x0001
 

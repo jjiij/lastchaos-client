@@ -140,25 +140,19 @@ typedef struct LUID {
   LONG  HighPart;
 } LUID;
 
-#ifndef _POINT_DEFINED
-#define _POINT_DEFINED
 typedef struct POINT {
   LONG x;
   LONG y;
 } POINT;
 
 typedef POINT* LPPOINT;
-#endif
 
-#ifndef _RECT_DEFINED
-#define _RECT_DEFINED
 typedef struct RECT {
   LONG left;
   LONG top;
   LONG right;
   LONG bottom;
 } RECT,*PRECT,*NPRECT,*LPRECT;
-#endif
 
 typedef struct SIZE {
   LONG cx;
@@ -179,13 +173,10 @@ typedef union {
   LONGLONG QuadPart;
 } LARGE_INTEGER;
 
-#ifndef _MEMORYSTATUS_DEFINED
-#define _MEMORYSTATUS_DEFINED
 typedef struct MEMORYSTATUS {
   DWORD  dwLength;
   SIZE_T dwTotalPhys;
 } MEMORYSTATUS;
-#endif
 
 typedef struct SECURITY_ATTRIBUTES {
   DWORD nLength;

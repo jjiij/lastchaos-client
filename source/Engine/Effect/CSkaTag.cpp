@@ -8,7 +8,7 @@
 #include <Engine/Ska/Mesh.h>
 #include <Engine/Math/Matrix12.h>
 #include <Engine/Math/Functions.h>
-#include <Engine/Base/Memory.h>
+#include <engine/Base/Memory.h>
 
 #define BONE_BLEND_ZERO		0
 #define BONE_BLEND_ONE		1

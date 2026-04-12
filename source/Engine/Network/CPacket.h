@@ -106,7 +106,7 @@ public:
 	void Drop();
 	
   // get the size of data transfer unit this packet belongs to
-  SLONG GetTransferSize();
+  SLONG CPacket::GetTransferSize();
 
 	// Copy operator
 	void operator=(const CPacket &paOriginal);

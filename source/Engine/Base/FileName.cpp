@@ -12,21 +12,6 @@ template CDynamicStackArray<CTFileName>;
 #include <Engine/Templates/StaticStackArray.cpp>
 template CStaticStackArray<long>;
 
-#if defined(PLATFORM_UNIX)
-// Prefer the rightmost directory separator so paths work with '/' (macOS/Linux) and '\\' (Windows data files).
-static char *LastPathSeparator(char *str) {
-	char *bs = strrchr(str, '\\');
-	char *sl = strrchr(str, '/');
-	if (bs == NULL) {
-		return sl;
-	}
-	if (sl == NULL) {
-		return bs;
-	}
-	return (bs > sl) ? bs : sl;
-}
-#endif
-
 /*
  * Get directory part of a filename.
  */
@@ -36,13 +21,6 @@ CTFileName CTFileName::FileDir() const
 
 	// make a temporary copy of string
 	CTFileName strPath(*this);
-#if defined(PLATFORM_UNIX)
-	char *pSep = LastPathSeparator(strPath.str_String);
-	if (pSep == NULL) {
-		return CTFileName("");
-	}
-	pSep[1] = 0;
-#else
 	// find last backlash in it
 	char *pPathBackSlash = strrchr( strPath.str_String, '\\');
 	// if there is no backslash
@@ -52,7 +30,6 @@ CTFileName CTFileName::FileDir() const
 	}
 	// set end of string after where the backslash was
 	pPathBackSlash[1] = 0;
-#endif
 	// return a copy of temporary string
 	return( CTFileName( strPath));
 }
@@ -80,13 +57,6 @@ CTFileName CTFileName::FileName() const
 		pDot[0] = 0;
 	}
 
-#if defined(PLATFORM_UNIX)
-	char *pSep = LastPathSeparator(strPath.str_String);
-	if (pSep == NULL) {
-		return CTFileName(strPath);
-	}
-	return CTFileName(pSep + 1);
-#else
 	// find last backlash in what's left
 	char *pBackSlash = strrchr( strPath.str_String, '\\');
 	// if there is no backslash
@@ -96,7 +66,6 @@ CTFileName CTFileName::FileName() const
 	}
 	// return a copy of temporary string, starting after the backslash
 	return( CTFileName( pBackSlash+1));
-#endif
 }
 
 /*

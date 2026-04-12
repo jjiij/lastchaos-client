@@ -1,5 +1,4 @@
 #include <tuple>
-#include <cstdlib>
 
 #include "vulkan_loader.h"
 
@@ -11,41 +10,17 @@
 namespace dxvk::vk {
 
   static std::pair<HMODULE, PFN_vkGetInstanceProcAddr> loadVulkanLibrary() {
-    static const std::array<const char*,
-#ifdef _WIN32
-      2
-#elif defined(__APPLE__)
-      5
-#else
-      2
-#endif
-    > dllNames = {{
+    static const std::array<const char*, 2> dllNames = {{
 #ifdef _WIN32
       "winevulkan.dll",
       "vulkan-1.dll",
-#elif defined(__APPLE__)
-      "@executable_path/../Frameworks/libvulkan.1.dylib",
-      "@executable_path/../Frameworks/libvulkan.dylib",
-      "libvulkan.1.dylib",
-      "libvulkan.dylib",
-      "libMoltenVK.dylib",
 #else
       "libvulkan.so",
       "libvulkan.so.1",
 #endif
     }};
 
-    Logger::info("Vulkan: probing dynamic loader candidates");
-#ifdef __APPLE__
-    if (const char* dyldPath = std::getenv("DYLD_LIBRARY_PATH"))
-      Logger::info(str::format("Vulkan: DYLD_LIBRARY_PATH=", dyldPath));
-    else
-      Logger::info("Vulkan: DYLD_LIBRARY_PATH=<unset>");
-#endif
-
     for (auto dllName : dllNames) {
-      Logger::info(str::format("Vulkan: trying loader candidate ", dllName));
-
       HMODULE library = LoadLibraryA(dllName);
 
       if (!library)

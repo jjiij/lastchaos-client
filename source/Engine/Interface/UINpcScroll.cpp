@@ -8,7 +8,7 @@
 #include <Engine/Interface/UIMap.h>
 #include <Engine/Interface/UIQuickSlot.h>
 #include <Engine/Interface/UIInventory.h>
-#include <Engine/Contents/function/SystemMenuUI.h>
+#include <engine/Contents/function/SystemMenuUI.h>
 #include <Engine/Entities/MobData.h>
 
 extern INDEX g_iXPosInNPCScroll;

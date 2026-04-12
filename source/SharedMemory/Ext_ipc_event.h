@@ -4,16 +4,9 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#ifdef _WIN32
 #include <windows.h>
-#endif
 #include <stdlib.h>
-#include <cstring>
 #include "SharedMemory_queue.h"
-
-#if !defined(MAX_PATH)
-#define MAX_PATH 260
-#endif
 
 #define SME_SENDCMD_INTERVAL 10
 #define SME_SENDCMD_TIMEOUT		(8*1000 / SME_SENDCMD_INTERVAL)
@@ -29,12 +22,7 @@ struct XSemaphore
 	int P();
 	int V();
 
-#ifdef _WIN32
 	typedef HANDLE handle_t;
-#else
-	struct XSemaphoreLocal;
-	typedef XSemaphoreLocal* handle_t;
-#endif
 
 	handle_t sem_;
 
@@ -505,41 +493,41 @@ public:
 	// Class XExtIPCEvent
 	int XExtIPCEventCreate(int ProcessID, int bIsMasterProcess = 0)
 	{
-		if (XSingle<Type>::CreateInstance())
-			return XSingle<Type>::GetInstance()->Create(ProcessID, bIsMasterProcess ? true : false);
+		if (CreateInstance())
+			return GetInstance()->Create(ProcessID, bIsMasterProcess ? true : false);
 
 		return -1;
 	}
 
 	void XExtIPCEventRelease(int bIsMasterProcess = 0)
 	{
-		XSingle<Type>::GetInstance()->Release(bIsMasterProcess ? true : false);
-		XSingle<Type>::ReleaseInstance();
+		GetInstance()->Release(bIsMasterProcess ? true : false);
+		ReleaseInstance();
 	}
 
 	int XExtIPCEventSend(Type* pInEventInfo, Type* pOutEventInfo, int nTimeout = -1)
 	{
-		return XSingle<Type>::GetInstance()->SendIPCEvent(pInEventInfo, pOutEventInfo, nTimeout);
+		return GetInstance()->SendIPCEvent(pInEventInfo, pOutEventInfo, nTimeout);
 	}
 
 	int XExtIPCEventPost(Type* pInEventInfo)
 	{
-		return XSingle<Type>::GetInstance()->PostIPCEvent(pInEventInfo);
+		return GetInstance()->PostIPCEvent(pInEventInfo);
 	}
 
 	int XExtIPCEventQueryIPCEvent(Type* pOutEventInfo, SME_IPC_EVENT_CALLBACK_T pfnCallbak)
 	{
-		return XSingle<Type>::GetInstance()->QueryIPCEvent(pOutEventInfo, pfnCallbak);
+		return GetInstance()->QueryIPCEvent(pOutEventInfo, pfnCallbak);
 	}
 	
 	void XExtIPCEventRecycleEvent(int idProcess)
 	{
-		XSingle<Type>::GetInstance()->RecycleEvent(idProcess);
+		GetInstance()->RecycleEvent(idProcess);
 	}
 
 	bool XExtIPCEventDumpInfo()
 	{
-		return XSingle<Type>::GetInstance()->DumpInfo();
+		return GetInstance()->DumpInfo();
 	}
 };
 

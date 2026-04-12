@@ -276,9 +276,7 @@ inline ENGINE_API void ClearToDefault(UBYTE &ub) { ub = 0; };
 inline ENGINE_API void ClearToDefault(SBYTE &sb) { sb = 0; };
 inline ENGINE_API void ClearToDefault(UWORD &uw) { uw = 0; };
 inline ENGINE_API void ClearToDefault(SWORD &sw) { sw = 0; };
-#ifndef PLATFORM_UNIX
 inline ENGINE_API void ClearToDefault(BOOL &b) { b = FALSE; };
-#endif
 inline ENGINE_API void ClearToDefault(CEntityPointer &pen) { pen = NULL; };
 inline ENGINE_API void ClearToDefault(CTString &str) { str = ""; };
 inline ENGINE_API void ClearToDefault(FLOATplane3D &pl) { pl = FLOATplane3D(FLOAT3D(0,1,0), 0); };

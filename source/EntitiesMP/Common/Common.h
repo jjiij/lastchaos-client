@@ -722,7 +722,7 @@ public:
 
 				if (iType == WEAR_HELMET )// Çï¸ä ÀÌ¿Ü Àåºñ Ã³¸®
 				{
-					((CPlayerEntity*)CEntity::GetPlayerEntity(0))->ChangeHairMesh(*hud_MI.GetModelInstance(), iJob, _pNetwork->MyCharacterInfo.hairStyle - 1);
+					((CPlayerEntity*)CEntity::GetPlayerEntity(0))->ChangeHairMesh(hud_MI.GetModelInstance(), iJob, _pNetwork->MyCharacterInfo.hairStyle - 1);
 				}else{									
 					// Mesh
 					fnFileName = pInfo->GetMeshName( iJob, iWearPos );

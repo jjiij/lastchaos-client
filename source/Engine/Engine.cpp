@@ -1,13 +1,5 @@
 #include "StdH.h"
 
-#include <string>
-#if defined(PLATFORM_MACOSX)
-#include <mach-o/dyld.h>
-#endif
-#if defined(PLATFORM_LINUX)
-#include <unistd.h>
-#endif
-
 #include <Engine/Build.h>
 #include <Engine/Base/Profiling.h>
 #include <Engine/Base/Input.h>
@@ -40,20 +32,18 @@
 #include <Engine/Templates/StaticArray.cpp>
 #include <Engine/Base/IFeel.h>
 #include <Engine/Base/StackDump.h>
-//?????? ???? ????	//(Add & Modify SSSE Effect)(0.1)
+//안태훈 수정 시작	//(Add & Modify SSSE Effect)(0.1)
 #include <Engine/Effect/EffectCommon.h>
-//?????? ???? ??	//(Add & Modify SSSE Effect)(0.1)
+//안태훈 수정 끝	//(Add & Modify SSSE Effect)(0.1)
 #include <Engine/Interface/UIManager.h>
-//?????? ???? ????	//(5th Closed beta)(0.2)
+//안태훈 수정 시작	//(5th Closed beta)(0.2)
 
 #include <Engine/GameDataManager/GameDataManager.h>
 #include <Engine/GameStageManager/StageMgr.h>
 #include <Engine/Contents/Base/UIMsgBoxMgr.h>
 
 #include <Engine/GameState.h>
-#ifdef USE_MINIDUMP
 #include <Engine/MiniDump.h>
-#endif
 #include <Engine/Network/Web.h>
 #include <Engine/JobInfo.h>
 #include <Engine/Entities/SkillTree.h>
@@ -99,21 +89,21 @@ ENGINE_API cWeb g_web;
 #ifdef USE_MINIDUMP
 MiniDumper	g_MiniDumper(TRUE);
 #endif
-//?????? ???? ??	//(5th Closed beta)(0.2)
-//?????? ???? ????	//(5th Closed beta)(0.2)
+//안태훈 수정 끝	//(5th Closed beta)(0.2)
+//안태훈 수정 시작	//(5th Closed beta)(0.2)
 #ifdef KALYDO
 CTFileName fnmPersistentSymbols = CTString("ps.dat");
 #else
 CTFileName fnmPersistentSymbols = CTString("Data\\etc\\ps.dat");
 #endif
-//?????? ???? ??	//(5th Closed beta)(0.2)
+//안태훈 수정 끝	//(5th Closed beta)(0.2)
 
 // this version string can be referenced from outside the engine
 ENGINE_API CTString _strEngineBuild  = "";
 ENGINE_API ULONG _ulEngineBuildMajor = _SE_BUILD_MAJOR;
 ENGINE_API ULONG _ulEngineBuildMinor = _SE_BUILD_MINOR;
 
-// <-- ErrorLog.txt?? ???÷??? ?????? ?????? ???? ?κ?
+// <-- ErrorLog.txt에 디스플레이 정보를 기록하기 위한 부분
 ENGINE_API CTString _strDisplayDriver = "";
 ENGINE_API CTString _strDisplayDriverVersion = "";
 ENGINE_API CTString _strSoundDriver = "";
@@ -127,8 +117,8 @@ ENGINE_API BOOL _bWorldEditorApp  = TRUE;
 ENGINE_API BOOL _bWorldEditorApp  = FALSE;
 #endif
 
-//	???
-ENGINE_API BOOL _bClientApp = FALSE;			// TRUE ??????? ???? ??????? ???.
+//	김영환
+ENGINE_API BOOL _bClientApp = FALSE;			// TRUE 설정되면 게임 클라이언트 이다.
 
 ENGINE_API BOOL _bUseBloomInWorldEditor = TRUE;
 ENGINE_API BOOL _bTranslucentModel = FALSE;
@@ -142,7 +132,7 @@ ENGINE_API BOOL _bSkaStudioApp = FALSE;
 ENGINE_API BOOL _bInTestGame  = FALSE;					// yjpark
 ENGINE_API BOOL _bShowPolygonAttribute = FALSE;			// yjpark
 ENGINE_API CTString _strLogFile = "";
-//?????? ???? ????
+//안태훈 수정 시작
 ENGINE_API BOOL g_bBadWeather = FALSE;
 ENGINE_API COLOR g_colWeather = C_WHITE|CT_OPAQUE;
 ENGINE_API INDEX g_bRenderDecoration = TRUE;
@@ -151,23 +141,23 @@ FLOAT g_fFarClipPlus = 0.0f;
 ENGINE_API INDEX g_bTestClient = FALSE;
 extern UINT g_uiEngineVersion;
 ENGINE_API char *g_szExitError = NULL;
-//?????? ???? ??
+//안태훈 수정 끝
 
 ENGINE_API int g_iLocalVersion = 700;
 
-//?????? ???? ???? ????? 2?? ???	08.18
+//강동민 수정 시작 클로즈 2차 작업	08.18
 ENGINE_API extern INDEX g_iShadowDetail			= 4;
 ENGINE_API extern INDEX g_iReflectionDetail		= 0;
-//?????? ???? ?? ????? 2?? ???		08.18
+//강동민 수정 끝 클로즈 2차 작업		08.18
 
 ENGINE_API INDEX idPlayerWhole_Animation[ANIM_TOTAL];
 
 
-//?????? ???? ????	//(5th Closed beta)(0.1)
+//안태훈 수정 시작	//(5th Closed beta)(0.1)
 ENGINE_API FLOAT g_fFramePerSecond = FLT_MAX;
 ENGINE_API BOOL g_bNoPlaySnd = FALSE;
-//?????? ???? ??	//(5th Closed beta)(0.1)
-//?????? ???? ????	//(Taiwan Closed beta)(0.2)
+//안태훈 수정 끝	//(5th Closed beta)(0.1)
+//안태훈 수정 시작	//(Taiwan Closed beta)(0.2)
 ENGINE_API INDEX g_iCountry = 0;	//0 : Korea
 INDEX g_iEnterChat = 1;
 INDEX g_iShowName = 0;
@@ -176,12 +166,12 @@ INDEX g_iShowNameItem = 1;
 // kw : WSS_HELP_SYSTEM_1
 INDEX g_iShowHelp1Icon = 1;
 
-// [090715: selo] - ????? ???? ???? 
+// [090715: selo] - 아이디 저장 여부 
 INDEX g_iSaveID = 0;
 extern CTString g_strSaveID = "";
 
 //#ifdef EUROUPEAN_SERVER_LOGIN
-// ??????? ???? ???? ???? [10/18/2012 Ranma]
+// 유로피안 서버 접속 여부 [10/18/2012 Ranma]
 INDEX g_iConnectEuroupean = 0;
 //#endif
 
@@ -193,10 +183,10 @@ INDEX g_iRejectParty = 0;
 INDEX g_iZoomInMap = 12;
 INDEX g_iOpacityInMap = 75;
 
-// 1106 UI ???? [09/05/11 trylord]
+// 1106 UI 개편 [09/05/11 trylord]
 INDEX g_iQuestBookOpen = 1;
 
-// UI ????. [9/16/2009 rumist]
+// UI 개편. [9/16/2009 rumist]
 INDEX g_iXPosInMap = 100;
 INDEX g_iYPosInMap = 100;
 INDEX g_iXPosInInventory=100;
@@ -207,7 +197,7 @@ INDEX g_iXPosInInvenSlot2=0;
 INDEX g_iYPosInInvenSlot2=0;
 INDEX g_iXPosInInvenSlot3=0;
 INDEX g_iYPosInInvenSlot3=0;
-// UI ?????? ??? ???? ??? ??? ???? ??? [12/18/2012 Ranma]
+// UI 퀵슬롯 확장 개편 작업 확장 슬롯 위치 [12/18/2012 Ranma]
 INDEX g_iXPosQuickSlotEX1=0;
 INDEX g_iYPosQuickSlotEX1=0;
 INDEX g_iXPosQuickSlotEX2=0;
@@ -242,7 +232,7 @@ ENGINE_API INDEX g_bSlaveNoTarget =FALSE;
 ENGINE_API BOOL g_bIsMalEng = FALSE;	//Add for malaysia 060330
 
 ENGINE_API INDEX g_iAutoAttack = 1;
-//?????? ???? ??	//(Taiwan Closed beta)(0.2)
+//안태훈 수정 끝	//(Taiwan Closed beta)(0.2)
 
 // global handle for application window
 extern ENGINE_API HWND  _hwndMain = NULL;
@@ -256,7 +246,7 @@ extern INDEX _iGfxAPI = -1; // -1=NONE, 0=OGL, 1=D3D
 #endif
 // ---------------------------------------------------<<
 
-// ?±????? ??? flag 051109
+// 태국버전 패치 flag 051109
 INDEX g_iTempFlag;
 
 // critical section for access to zlib functions
@@ -335,10 +325,10 @@ extern ENGINE_API const UBYTE *pubClipByte = &aubClipByte[256*2];
 extern UBYTE aubSqrt[SQRTTABLESIZE]   = {0};
 extern UWORD auw1oSqrt[SQRTTABLESIZE] = {0};
 
-//?????? ???? ????	//(Option)(0.1)
+//안태훈 수정 시작	//(Option)(0.1)
 extern ENGINE_API FLOAT ter_fLODMul = 1.0f;
 extern ENGINE_API FLOAT g_fChaLODMul = 1.0f;
-//?????? ???? ??	//(Option)(0.1)
+//안태훈 수정 끝	//(Option)(0.1)
 
 // main window canvas											// yjpark |<--
 extern ENGINE_API BOOL		_bWindowChanging = FALSE;
@@ -367,8 +357,8 @@ bool g_bDrawportRus;
 #ifndef NO_GAMEGUARD
 ENGINE_API CTString g_szHackMsg;
 // ---------------------------------------------------<<
-// ????? ??? CallBack ???
-// ???? ???????? false?? return?? ??? ???????? ???? ???? true?? return????.
+// 메시지 처리 CallBack 함수
+// 게임 종료시에는 false를 return해 주고 종료하지 않은 경우는 true를 return합니다.
 /*
 int CALLBACK NPGameMonCallback(DWORD dwMsg,DWORD dwArg)
 {	
@@ -381,7 +371,7 @@ int CALLBACK NPGameMonCallback(DWORD dwMsg,DWORD dwArg)
 	
 	if(tAppExit)
 	{
-		// ???? ????
+		// 게임 종료
 		_pGameState->Running()		= FALSE;
 		_pGameState->QuitScreen()	= FALSE;
 		return FALSE;
@@ -394,11 +384,11 @@ int CALLBACK NPGameMonCallback(DWORD dwMsg,DWORD dwArg)
 
 
 // root of evil :)
-// ??? ??????? ?????? shared ??? ???. [2/4/2010 rumist]
-// ?????? ?????? ?????? ?? ???. ????? ????? ????????.. ????.
-// ????? ?迭?? ?????? ????? ?????? ?????? ????? ???? ??? ??念??????
-// ??????. ???? ?????????? ???? ????? ???? ????? ???? ?????? ?????????
-// ??? ?????? ?? ????.
+// 중복 클라이언트 방지용 shared 메모리 사용. [2/4/2010 rumist]
+// 원래는 크리티컬 섹션을 써도 된다. 어느게 효율이 좋을지는.. 고민.
+// 뮤텍스 계열의 단점은 실행시 호환성이 변경되면 뮤텍스 역시 다른 코드영역에서
+// 실행된다. 또한 마찬가지로 강제 종료시 정상 처리가 되지 않으면 클라이언트를
+// 다시 실행할 수 없다.
 //- detect multi client.
 // ### We will disable checking for multiple running copies of the game
 /*
@@ -620,7 +610,7 @@ static void PrepareTables(void)
 {
 	INDEX i;
 	// prepare array for fast clamping to 0..255
-	for( i=-256*2; i<256*4; i++) aubClipByte[i+256*2] = (UBYTE)Clamp((SLONG)i, (SLONG)0, (SLONG)255);
+	for( i=-256*2; i<256*4; i++) aubClipByte[i+256*2] = (UBYTE)Clamp( i, 0L, 255L);
 	// prepare fast sqrt tables
 	for( i=0; i<SQRTTABLESIZE; i++) aubSqrt[i]   = (UBYTE)(sqrt((float)i*65536/SQRTTABLESIZE));
 	for( i=1; i<SQRTTABLESIZE; i++) auw1oSqrt[i] = (UWORD)(sqrt((FLOAT)(SQRTTABLESIZE-1)/i)*255.0f);
@@ -641,7 +631,6 @@ char strDirPath[MAX_PATH] = "";
 
 static void AnalyzeApplicationPath(void)
 {
-#if defined(PLATFORM_WIN32)
 	strcpy(strDirPath, "T:\\");
 	strcpy(strExePath, "T:\\SeriousSam.xbe");
 	char strTmpPath[MAX_PATH] = "";
@@ -655,10 +644,10 @@ static void AnalyzeApplicationPath(void)
 	int nBackSlash = strPath.rfind('\\');
 	//reza removed _DEBUG ||
 #if		UI_TOOL || WORLD_EDITOR
-	// Debug ???? - Debug ?????? ?????? ????? ???? : ??? ?? ?????.
+	// Debug 제거 - Debug 파일은 한폴더 안쪽에 존재 : 한겹 더 벗긴다.
 	nBackSlash = strPath.rfind('\\', --nBackSlash);	
 #endif	// _DEBUG
-	// Bin ????
+	// Bin 제거
 	nBackSlash = strPath.rfind('\\', --nBackSlash);
 	strPath = strPath.substr(0, nBackSlash+1);
 
@@ -666,72 +655,6 @@ static void AnalyzeApplicationPath(void)
 
 	strncpy( strDirPath, pstrFin, sizeof(strDirPath)-1);
 	strDirPath[sizeof(strDirPath)-1] = 0;
-#elif defined(PLATFORM_MACOSX)
-	strcpy(strExePath, "");
-	strcpy(strDirPath, "");
-	char tmpExe[MAX_PATH];
-	uint32_t bufSize = sizeof(tmpExe);
-	if (_NSGetExecutablePath(tmpExe, &bufSize) != 0) {
-		strcpy(strExePath, "./LastChaos");
-		strcpy(strDirPath, "./");
-		return;
-	}
-	char resolvedExe[MAX_PATH];
-	if (realpath(tmpExe, resolvedExe) != NULL) {
-		strncpy(strExePath, resolvedExe, sizeof(strExePath) - 1);
-	} else {
-		strncpy(strExePath, tmpExe, sizeof(strExePath) - 1);
-	}
-	strExePath[sizeof(strExePath) - 1] = '\0';
-
-	{
-		std::string strPath(strExePath);
-		const char kSeg[] = "/Contents/MacOS/";
-		const size_t pos = strPath.find(kSeg);
-		if (pos != std::string::npos) {
-			const std::string bundleRoot = strPath.substr(0, pos);
-			const std::string gameRoot = bundleRoot + "/Contents/Resources/Game/";
-			strncpy(strDirPath, gameRoot.c_str(), sizeof(strDirPath) - 1);
-		} else {
-			const size_t slash = strPath.find_last_of("/\\");
-			if (slash != std::string::npos) {
-				const std::string dir = strPath.substr(0, slash + 1);
-				strncpy(strDirPath, dir.c_str(), sizeof(strDirPath) - 1);
-			} else {
-				strcpy(strDirPath, "./");
-			}
-		}
-		strDirPath[sizeof(strDirPath) - 1] = '\0';
-	}
-#elif defined(PLATFORM_LINUX)
-	strcpy(strExePath, "");
-	strcpy(strDirPath, "");
-	char procBuf[MAX_PATH];
-	const ssize_t len = readlink("/proc/self/exe", procBuf, sizeof(procBuf) - 1);
-	if (len > 0) {
-		procBuf[len] = '\0';
-		char resolvedExe[MAX_PATH];
-		if (realpath(procBuf, resolvedExe) != NULL) {
-			strncpy(strExePath, resolvedExe, sizeof(strExePath) - 1);
-		} else {
-			strncpy(strExePath, procBuf, sizeof(strExePath) - 1);
-		}
-		strExePath[sizeof(strExePath) - 1] = '\0';
-		std::string strPath(strExePath);
-		const size_t slash = strPath.find_last_of("/\\");
-		if (slash != std::string::npos) {
-			strncpy(strDirPath, strPath.substr(0, slash + 1).c_str(), sizeof(strDirPath) - 1);
-		} else {
-			strcpy(strDirPath, "./");
-		}
-		strDirPath[sizeof(strDirPath) - 1] = '\0';
-	} else {
-		strcpy(strExePath, "./");
-		strcpy(strDirPath, "./");
-	}
-#else
-#error "AnalyzeApplicationPath is not implemented for this platform."
-#endif
 }
 
 // [2013/01/16] sykim70
@@ -958,11 +881,11 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 
 	// print basic engine info
 	CPrintF(TRANS("--- Serious Engine Startup ---\n"));
-	CPrintF("  %s\n\n", (const char*)_strEngineBuild);
+	CPrintF("  %s\n\n", _strEngineBuild);
 
 	// print info on the started application
 	CPrintF(TRANS("Executable: %s\n"), strExePath);
-	CPrintF(TRANS("Assumed engine directory: %s\n"), (const char*)_fnmApplicationPath);
+	CPrintF(TRANS("Assumed engine directory: %s\n"), _fnmApplicationPath);
 
 	CPrintF("\n");
 
@@ -992,7 +915,7 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 			osv.dwMajorVersion, osv.dwMinorVersion, osv.dwBuildNumber & 0xFFFF);
 		CPrintF(TRANS("  Misc: %s\n"), osv.szCSDVersion);
 	} else {
-		CPrintF(TRANS("Error getting OS info: %s\n"), (const char*)GetWindowsError(GetLastError()));
+		CPrintF(TRANS("Error getting OS info: %s\n"), GetWindowsError(GetLastError()) );
 	}
 	CPrintF("\n");
 
@@ -1072,36 +995,36 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 
 	// Stock clearing
 	extern void FreeUnusedStock(void);
-	_pShell->DeclareSymbol("user void FreeUnusedStock(void);", (void*)&FreeUnusedStock);
+	_pShell->DeclareSymbol("user void FreeUnusedStock(void);", &FreeUnusedStock);
 	
 	// Timer tick quantum
 	_pShell->DeclareSymbol("user const FLOAT fTickQuantum;", (FLOAT*)&_pTimer->TickQuantum);
 	_pShell->DeclareSymbol("persistent user INDEX gam_iMaxSaveGameSize;",&gam_iMaxSaveGameSize);
-//?????? ???? ????	//(Add & Modify SSSE Effect)(0.1)
+//안태훈 수정 시작	//(Add & Modify SSSE Effect)(0.1)
 	_pShell->DeclareSymbol("user FLOAT g_fGWTime;",&g_fGWTime);
 	_pShell->DeclareSymbol("user FLOAT g_fGWTimeMul;",&g_fGWTimeMul);
-//?????? ???? ??	//(Add & Modify SSSE Effect)(0.1)
-//?????? ???? ????	//(For Performance)(0.1)
+//안태훈 수정 끝	//(Add & Modify SSSE Effect)(0.1)
+//안태훈 수정 시작	//(For Performance)(0.1)
 	_pShell->DeclareSymbol("persistent user INDEX g_bRenderDecoration;", &g_bRenderDecoration);
-//?????? ???? ??	//(For Performance)(0.1)
-//?????? ???? ????	//(Option)(0.1)
+//안태훈 수정 끝	//(For Performance)(0.1)
+//안태훈 수정 시작	//(Option)(0.1)
 	_pShell->DeclareSymbol("persistent user FLOAT ter_fLODMul;", &ter_fLODMul);
 	_pShell->DeclareSymbol("persistent user FLOAT g_fChaLODMul;", &g_fChaLODMul);
 	_pShell->DeclareSymbol("persistent user INDEX g_iUseBloom;", &g_iUseBloom);
 	_pShell->DeclareSymbol("           user FLOAT g_fFarClipPlus;", &g_fFarClipPlus);
-//?????? ???? ??	//(Option)(0.1)
+//안태훈 수정 끝	//(Option)(0.1)
 
-//?????? ???? ???? ????? 2?? ???	08.18
+//강동민 수정 시작 클로즈 2차 작업	08.18
 	_pShell->DeclareSymbol("persistent user INDEX g_iShadowDetail;",&g_iShadowDetail);
 	_pShell->DeclareSymbol("persistent user INDEX g_iReflectionDetail;",&g_iReflectionDetail);
-//?????? ???? ?? ????? 2?? ???		08.18
-//?????? ???? ????	//(Taiwan Closed beta)(0.2)
+//강동민 수정 끝 클로즈 2차 작업		08.18
+//안태훈 수정 시작	//(Taiwan Closed beta)(0.2)
 	_pShell->DeclareSymbol("persistent      INDEX g_iCountry;", &g_iCountry);
 	_pShell->DeclareSymbol("persistent      INDEX g_iEnterChat;", &g_iEnterChat);
 	_pShell->DeclareSymbol("persistent      INDEX g_iShowName;", &g_iShowName);
 	_pShell->DeclareSymbol("persistent      INDEX g_iShowNameItem;", &g_iShowNameItem);
 	_pShell->DeclareSymbol("persistent      INDEX g_iAutoAttack;", &g_iAutoAttack);
-//?????? ???? ??	//(Taiwan Closed beta)(0.2)
+//안태훈 수정 끝	//(Taiwan Closed beta)(0.2)
 	// wooss 070401 ---------------------------------------------------------------->><<
 	// kw : WSS_HELP_SYSTEM_1
 	_pShell->DeclareSymbol("persistent      INDEX g_iShowHelp1Icon;", &g_iShowHelp1Icon);
@@ -1114,14 +1037,14 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 	_pShell->DeclareSymbol("persistent		INDEX g_iRejectExchange;", &g_iRejectExchange);
 	_pShell->DeclareSymbol("persistent		INDEX g_iRejectParty;", &g_iRejectParty);
 
-	// 1106 UI ???? - ????? ?? ???? [09/05/11 trylord]
+	// 1106 UI 개편 - 퀘스트 북 열기 [09/05/11 trylord]
 	_pShell->DeclareSymbol("persistent		INDEX g_iQuestBookOpen;", &g_iQuestBookOpen);
 
 	// Map Info. [9/15/2009 rumist]
 	_pShell->DeclareSymbol("persistent		INDEX g_iZoomInMap;", &g_iZoomInMap);
 	_pShell->DeclareSymbol("persistent		INDEX g_iOpacityInMap;", &g_iOpacityInMap);
 
-	// UI ???? ???. [9/16/2009 rumist]
+	// UI 개편 작업. [9/16/2009 rumist]
 	_pShell->DeclareSymbol("persistent		INDEX g_iXPosInMap;", &g_iXPosInMap);
 	_pShell->DeclareSymbol("persistent		INDEX g_iYPosInMap;", &g_iYPosInMap);
 	_pShell->DeclareSymbol("persistent		INDEX g_iXPosInInventory;", &g_iXPosInInventory);
@@ -1133,7 +1056,7 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 	_pShell->DeclareSymbol("persistent		INDEX g_iXPosInInvenSlot3;", &g_iXPosInInvenSlot3);
 	_pShell->DeclareSymbol("persistent		INDEX g_iYPosInInvenSlot3;", &g_iYPosInInvenSlot3);
 	
-	// UI ?????? ??? ???? ??? ??? ???? ??? [12/18/2012 Ranma]
+	// UI 퀵슬롯 확장 개편 작업 확장 슬롯 위치 [12/18/2012 Ranma]
 	_pShell->DeclareSymbol("persistent		INDEX g_iXPosQuickSlotEX1;", &g_iXPosQuickSlotEX1);
 	_pShell->DeclareSymbol("persistent		INDEX g_iYPosQuickSlotEX1;", &g_iYPosQuickSlotEX1);
 	_pShell->DeclareSymbol("persistent		INDEX g_iXPosQuickSlotEX2;", &g_iXPosQuickSlotEX2);
@@ -1198,9 +1121,9 @@ ENGINE_API void SE_InitEngine(CTString strGameID)
 	}
 
 	// Create log file for console if not allready created
-//?????? ???? ????	//(Block Log)(0.1)
+//안태훈 수정 시작	//(Block Log)(0.1)
     //_pConsole->CreateLogFile(fnmLog); // ### Enable log
-//?????? ???? ????	//(Block Log)(0.1)
+//안태훈 수정 시작	//(Block Log)(0.1)
 
 	// keep mod name in sys cvar
 	sys_strModName = _strModName;
@@ -1295,7 +1218,7 @@ ENGINE_API void CheckEngineVersion()
 	{
 		if(g_szExitError) delete[] g_szExitError;
 		g_szExitError = new char[4096];
-		strcpy(g_szExitError, _S( 864, "???? ?????? ???? ??????." ));
+		strcpy(g_szExitError, _S( 864, "버전 정보가 맞지 않습니다." ));
 		_pGameState->Running() = FALSE;
 		_pGameState->QuitScreen() = FALSE;
 	}
@@ -1335,9 +1258,9 @@ ENGINE_API void SE_EndEngine(void)
 
 	StringLoader::destroy();
 	if(_pGameState)
-		_pGameState->DeleteSelectModel(); // Free Stocks ???? ???? ????????? ???.
+		_pGameState->DeleteSelectModel(); // Free Stocks 보다 먼저 삭제하여야 한다.
 
-	CLoginJobInfo::destroy(); // ???? ????????? ????? ????? ???????? ???.
+	CLoginJobInfo::destroy(); // 게임 스테이트의 모델보다 나중에 지워져야 한다.
 	CJobInfo::destroy();
 
 	CUIManager::destroy();
@@ -1511,12 +1434,6 @@ touchLoop:
   return TRUE;
 }
 #endif // PLATFORM_WIN32
-#ifndef PLATFORM_WIN32
-static BOOL TouchBlock(UBYTE *, INDEX)
-{
-	return TRUE;
-}
-#endif
 
 // pretouch all memory commited by process
 extern BOOL _bNeedPretouch = FALSE;

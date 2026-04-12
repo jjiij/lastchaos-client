@@ -35,30 +35,11 @@
 #include <Engine/Templates/Stock_CAnimData.h>
 #include <Loading.h>
 
-#if defined(PLATFORM_UNIX)
-#include <string>
-#endif
-
-// Normalize SeriousEngine-style paths (backslashes) for POSIX fopen when building on Unix/macOS.
-static FILE *LC_FopenNormalized(const char *path, const char *mode) {
-#if defined(PLATFORM_UNIX)
-  std::string s(path);
-  for (size_t i = 0; i < s.size(); ++i) {
-    if (s[i] == '\\') {
-      s[i] = '/';
-    }
-  }
-  return fopen(s.c_str(), mode);
-#else
-  return fopen(path, mode);
-#endif
-}
-
 // default size of page used for stream IO operations (4Kb)
 ULONG _ulPageSize = 0;
 // maximum lenght of file that can be saved (default: 128Mb)
-// [070531: Su-won] ?????? ???????? 128MB?? ???? ?????? ?????? ????? ??? ???? ???? ???.
-// ??? ???? ??? 128MB?? ?? ??? ???? ?? ??? 64MB?? ????. 
+// [070531: Su-won] 파일을 열때마다 128MB의 메모리를 요청하여 에디터 작업시 메모리 부족 현상 발생.
+// 최대 파일 크기를 128MB나 될 필요가 없을 듯 하여 64MB로 수정. 
 //ULONG _ulMaxLenghtOfSavingFile = (1UL<<20)*128;
 ULONG _ulMaxLenghtOfSavingFile = (1UL<<20)*64;
 
@@ -383,10 +364,10 @@ void CTStream::DisableStreamHandling(void)
   ASSERT(0 != _bThreadCanHandleStreams );
 
   _bThreadCanHandleStreams = FALSE;
-//?????? ???? ????	//(DevPartner Bug Fix)(2005-01-13)
+//안태훈 수정 시작	//(DevPartner Bug Fix)(2005-01-13)
   //delete _plhOpenedStreams;
   //_plhOpenedStreams = NULL;
-//?????? ???? ??	//(DevPartner Bug Fix)(2005-01-13)
+//안태훈 수정 끝	//(DevPartner Bug Fix)(2005-01-13)
 }
 
 void CTStream::ClearStreamHandling(void)
@@ -1060,7 +1041,7 @@ void CTStream::DictionaryReadEnd_t(void)
       } else if (strExt==".smc") {
         _pModelInstanceStock->Release((CModelInstanceSerial*)fnm.fnm_pserPreloaded);
       }
-	  //0428 kwon ?????
+	  //0428 kwon 지우기
 	  /* else if (strExt==".bm") {
         _pMeshStock->Release((CMesh*)fnm.fnm_pserPreloaded);
       } else if (strExt==".bs") {
@@ -1091,7 +1072,7 @@ static int qsortCompareCTFileName_ByIndex(const void *pv0, const void *pv1)
 void CTStream::DictionaryPreload_t(void)
 {
   CTSingleLock sl(&_csStreams, TRUE);
-  INDEX ctFileNames = strm_afnmDictionary.Count(); //0428 ???? 401?? ????.
+  INDEX ctFileNames = strm_afnmDictionary.Count(); //0428 현재 401개 파일.
   
   // make a secondary container for the filenames
   CDynamicContainer<CTFileName> cfnmFiles;
@@ -1126,7 +1107,7 @@ void CTStream::DictionaryPreload_t(void)
       } else if (strExt==".smc") {
         fnm.fnm_pserPreloaded = _pModelInstanceStock->Obtain_t(fnm);
       }
-	   //0428 kwon ?????
+	   //0428 kwon 지우기
 	  /* else if (strExt==".bm") {
         fnm.fnm_pserPreloaded = _pMeshStock->Obtain_t(fnm);
       } else if (strExt==".bs") {
@@ -1359,7 +1340,7 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
 				CPrintF("      Open: %s\n", (const char*)fnmFullFileName);
 			}
 			// open file in read only mode
-			fstrm_pFile = LC_FopenNormalized(fnmFullFileName, "rb");
+			fstrm_pFile = fopen(fnmFullFileName, "rb");
 			// seek to the end of the physical disc file
 			fseek( fstrm_pFile, 0, SEEK_END);
 			// get current position in file (acctually file size)
@@ -1378,7 +1359,7 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
 	else if( om == OM_WRITE)
 	{
 		// open file for reading and writting
-		fstrm_pFile = LC_FopenNormalized(fnmFullFileName, "rb+");
+		fstrm_pFile = fopen(fnmFullFileName, "rb+");
 		fstrm_bReadOnly = FALSE;
 		// allocate amount of memory needed to hold maximum allowed file lenght (when saving)
 		// plus page that is allocated at the end of the file area (due to two-pages commiting
@@ -1433,7 +1414,7 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
 						CPrintF("      Open: %s\n", (const char*)fnmFullFileName);
 					}
 					// open file in read only mode
-					fstrm_pFile = LC_FopenNormalized(fnmFullFileName, "rb");
+					fstrm_pFile = fopen(fnmFullFileName, "rb");
 					// seek to the end of the physical disc file
 					fseek( fstrm_pFile, 0, SEEK_END);
 					// get current position in file (acctually file size)
@@ -1452,7 +1433,7 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
 			else if( om == OM_WRITE)
 			{
 				// open file for reading and writting
-				fstrm_pFile = LC_FopenNormalized(fnmFullFileName, "rb+");
+				fstrm_pFile = fopen(fnmFullFileName, "rb+");
 				fstrm_bReadOnly = FALSE;
 				// allocate amount of memory needed to hold maximum allowed file lenght (when saving)
 				// plus page that is allocated at the end of the file area (due to two-pages commiting
@@ -1486,7 +1467,7 @@ void CTFileStream::Open_t(const CTFileName &fnFileName, CTStream::OpenMode om/*=
 	// add this newly opened file into opened stream list
 	_plhOpenedStreams->AddTail( strm_lnListNode);
 	// notify progress hook of new file
-	//SetProgressFile(fnFileName);	// ?ε? ????
+	//SetProgressFile(fnFileName);	// 로딩 개선
 }
 
 static BOOL CreateDirectoryPath(const CTFileName &fnFileName)
@@ -1553,7 +1534,7 @@ void CTFileStream::Create_t(const CTFileName &fnFileName,
   // check that the file is not open
   ASSERT(fstrm_pFile == NULL);
   // open file stream for writting (destroy file context if file existed before)
-  fstrm_pFile = LC_FopenNormalized(fnmFullFileName, "wb+");
+  fstrm_pFile = fopen(fnmFullFileName, "wb+");
   // if not successfull
   if(fstrm_pFile == NULL) {
     // if directory for file does not exist
@@ -1562,7 +1543,7 @@ void CTFileStream::Create_t(const CTFileName &fnFileName,
       // if creation of directory path succeeded
       if(CreateDirectoryPath(fnmFullFileName)) {
         // open file stream for writting
-        fstrm_pFile = LC_FopenNormalized(fnmFullFileName, "wb+");
+        fstrm_pFile = fopen(fnmFullFileName, "wb+");
         // if still not successfull
         if(fstrm_pFile == NULL) {
           // throw exception
@@ -2017,7 +1998,7 @@ BOOL FileExistsForWriting(const CTFileName &fnmFile)
   INDEX iFile = ExpandFilePath(EFP_WRITE, fnmFile, fnmFullFileName);
 
   // check if it exists
-  FILE *f = LC_FopenNormalized(fnmFullFileName, "rb");
+  FILE *f = fopen(fnmFullFileName, "rb");
   if (f!=NULL) { 
     fclose(f);
     return TRUE;
@@ -2125,7 +2106,7 @@ BOOL CTMoveFile(const CTFileName &fnmFileOld, const CTFileName &fnmFileNew)
 
 static BOOL IsFileReadable_internal(const CTFileName &fnmFullFileName)
 {
-  FILE *pFile = LC_FopenNormalized(fnmFullFileName, "rb");
+  FILE *pFile = fopen(fnmFullFileName, "rb");
   if (pFile!=NULL) {
     fclose(pFile);
     return TRUE;

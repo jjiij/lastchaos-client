@@ -7,9 +7,7 @@
 
 // #include <dimm.h>
 
-#ifdef _MSC_VER
 #pragma comment ( lib, "imm32" )
-#endif
 
 // define ...
 #define MAX_CANDLIST	10

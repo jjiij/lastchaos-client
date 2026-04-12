@@ -11,7 +11,7 @@
 #include <Engine/Entities/Entity.h>
 #include <vector>
 #include <Engine/Help/LoadLod.h>
-#include <Common/header/def_apet.h>
+#include <common/header/def_apet.h>
 
 #define WILDPET_FLAG_ATTACK (1 << 0)	// °ø°Ý °¡´ÉÇÑ Æê À¯¹«
 #define WILDPET_FLAG_EXP	(1 << 1)	// °æÇèÄ¡ ÃàÃ´ Æê À¯¹«

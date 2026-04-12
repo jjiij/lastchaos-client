@@ -120,7 +120,7 @@
 #include <Common/Packet/ptype_old_extend.h>
 #include <Common/Packet/ptype_attendance.h>
 #include <Common/Packet/ptype_old_login.h>
-#include <Common/Packet/ptype_premium_char.h>
+#include <common/Packet/ptype_premium_char.h>
 
 #define MAX_MOVE_LIST		(20)
 #define	DEF_SKILL_SEND_DELAY	200

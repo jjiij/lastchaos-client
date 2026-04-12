@@ -5,17 +5,7 @@
 #endif
 
 
-#ifdef PLATFORM_WIN32
 #include <DSound.h>
-#else
-typedef void* LPDIRECTSOUNDBUFFER;
-typedef void* LPDIRECTSOUND3DBUFFER;
-typedef void* LPKSPROPERTYSET;
-typedef void* LPDIRECTSOUND;
-typedef void* LPDIRECTSOUND3DLISTENER;
-typedef void* HWAVEOUT;
-typedef void* WAVEHDR;
-#endif
 #include <Engine/Base/Lists.h>
 #include <Engine/Base/Synchronization.h>
 #include <Engine/Math/Vector.h>
@@ -121,9 +111,6 @@ public:
   DOUBLE sl_tmMuteUntil;        // time to keep sounds muted
 
 #endif // PLATFORM_WIN32
-#ifndef PLATFORM_WIN32
-  SoundFormat sl_sfFormat;
-#endif
 
 private:
   // internal stuff

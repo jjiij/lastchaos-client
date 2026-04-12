@@ -4,11 +4,7 @@
   #pragma once
 #endif
 
-#ifdef PLATFORM_WIN32
 #include <DSound.h>
-#else
-typedef void* LPDIRECTSOUNDBUFFER;
-#endif
 #include <Engine/Base/Lists.h>
 #include <Engine/Base/Serial.h>
 

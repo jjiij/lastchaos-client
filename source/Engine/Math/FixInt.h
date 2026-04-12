@@ -31,10 +31,8 @@ public:
   inline FixInt<iInt, iFrac>(UWORD uw) : slHolder((SLONG)(uw<<iFrac)) {};
   inline FixInt<iInt, iFrac>(SBYTE sb) : slHolder((SLONG)(sb<<iFrac)) {};
   inline FixInt<iInt, iFrac>(UBYTE ub) : slHolder((SLONG)(ub<<iFrac)) {};
-#ifndef PLATFORM_UNIX
   inline FixInt<iInt, iFrac>(signed int si)   : slHolder((SLONG)(si<<iFrac)) {};
   inline FixInt<iInt, iFrac>(unsigned int ui) : slHolder((SLONG)(ui<<iFrac)) {};
-#endif
   /* Constructor from float. */
   inline FixInt<iInt, iFrac>(float f)  : slHolder((SLONG)(f*(1L<<iFrac))) {};
   inline FixInt<iInt, iFrac>(double f) : slHolder((SLONG)(f*(1L<<iFrac))) {};

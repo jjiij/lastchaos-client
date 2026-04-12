@@ -22,7 +22,7 @@ public:
 	//tag info control functions, CTag의 함수로 전달
 	void AddNewTagInfo(TagInfo &info) { CTag::AddNewTagInfo(info); }
 	void AddNewTagInfo(FLOAT time, Matrix12 &mInfo, Matrix12 &mStrInfo) { CTag::AddNewTagInfo(time, mInfo, mStrInfo); }
-	void AddNewTagInfo(FLOAT time, const FLOATquat3D &rot, const FLOAT3D &pos, const FLOAT3D &stretch) { FLOATquat3D localRot = rot; FLOAT3D localPos = pos; FLOAT3D localStretch = stretch; CTag::AddNewTagInfo(time, localRot, localPos, localStretch); }
+	void AddNewTagInfo(FLOAT time, FLOATquat3D &rot, FLOAT3D &pos, FLOAT3D &stretch) { CTag::AddNewTagInfo(time, rot, pos, stretch); }
 };
 
 #endif /* __CWORLDTAG_H__ */

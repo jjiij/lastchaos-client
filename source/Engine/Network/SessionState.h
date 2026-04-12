@@ -12,7 +12,7 @@
 #include <Engine/Network/SlaveTarget.h>
 #include <Engine/Network/ItemTarget.h>
 #include <Engine/Network/SessionSocket.h>
-#include <Engine/Network/cmd.h>
+#include <Engine/Network/Cmd.h>
 #include <Engine/GlobalDefinition.h>
 #include <Engine/LocalDefine.h>
 #include <Engine/Base/Command.h>
@@ -493,9 +493,9 @@ BOOL PCStartEffectGroup(const char *szEffectGroupName, SLONG slPCIndex, CEntity 
 BOOL ENGINE_API WildPetStartEffectGroup(const char *szEffectGroupName, SLONG slPetIndex, CEntity *penPet = NULL );
 
 #ifdef	VER_TEST
-extern const char* strMSG_MAIN[];
-extern const char* strMSG_EXTEND[];
-extern const char* strMSG_UPDATE[];
+const char* strMSG_MAIN[];
+const char* strMSG_EXTEND[];
+const char* strMSG_UPDATE[];
 #endif	// VER_TEST
 
 #endif  /* include-once check. */

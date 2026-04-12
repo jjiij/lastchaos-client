@@ -19,7 +19,7 @@
 //강동민 수정 시작
 #include <Engine/Rendering/Render_internal.h>
 #include <Engine/Ska/ModelInstance.h>
-#include <Engine/Ska/Render.h>
+#include <Engine/SKA/Render.h>
 //강동민 수정 끝
 
 #include <Engine/Base/Console.h>

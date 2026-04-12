@@ -14,15 +14,12 @@ ENGINE_API extern void *MEM_CAlloc( size_t num, size_t size );
 ENGINE_API extern size_t MEM_Size( void *memblock); // this one is not really ANSI must is often used
 ENGINE_API extern size_t MEM_GetFreeMemory(void);  // how much memory is free
 
-// we hide the basic ANSI C/C++ memory access system, so that ours is used instead.
-// Keep this limited to Win32 builds to avoid polluting libc++ headers on Unix targets.
-#if defined(_WIN32) || defined(_WIN64)
+// we hide the basic ANSI C/C++ memory access system, so that ours is used instead
 #define malloc MEM_MAlloc
 #define free MEM_Free
 #define realloc MEM_ReAlloc
 #define calloc MEM_CAlloc
 #define _msize MEM_Size
-#endif
 
 //inline void *operator new(size_t size) { return MEM_MAlloc(size); };
 //inline void operator delete(void *pv) { MEM_Free(pv);  };

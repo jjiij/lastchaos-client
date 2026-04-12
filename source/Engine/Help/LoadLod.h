@@ -53,8 +53,8 @@ public:
 	}
 	static void release()
 	{
-		typename std::map<int, T*>::iterator it = _mapdata.begin();
-		typename std::map<int, T*>::iterator it_end = _mapdata.end();
+		std::map<int, T*>::iterator it = _mapdata.begin();
+		std::map<int, T*>::iterator it_end = _mapdata.end();
 
 		for (; it != it_end; ++it)
 		{
@@ -76,7 +76,7 @@ public:
 	static int getsize()	{ return (int)_mapdata.size(); }
 	static T* getData(int Idx) 
 	{
-		typename std::map<int, T*>::iterator it = _mapdata.find(Idx);
+		std::map<int, T*>::iterator it = _mapdata.find(Idx);
 
 		if (it != _mapdata.end())
 			return (*it).second;

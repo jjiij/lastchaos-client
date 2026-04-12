@@ -7,7 +7,7 @@
 #include <vector>
 
 #include <Engine/Help/LoadLod.h>
-#include <Common/header/def_combo.h>
+#include <common/header/def_combo.h>
 
 
 class ENGINE_API CMissionCase : public stMonsterCombo, public LodLoader<CMissionCase>

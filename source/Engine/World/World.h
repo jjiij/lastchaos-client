@@ -278,7 +278,7 @@ public:
 	/* Clear all entity pointers that point to this entity. */
 	void UntargetEntity(CEntity *penToUntarget);
 	// print entity reference info to the console
-	void DumpReferenceInfo(CEntity *penEntity);
+	void CWorld::DumpReferenceInfo(CEntity *penEntity);
 
 	/* Add an entity to list of timers. */
 	void AddTimer(CRationalEntity *penTimer);

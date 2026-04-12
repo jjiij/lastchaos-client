@@ -7,9 +7,6 @@
 #include <Engine/Base/CTString.h>
 #include <Engine/Base/Synchronization.h>
 #include <Engine/Templates/StaticArray.cpp>
-#if defined(PLATFORM_UNIX) && defined(LC_SKIP_WIN_GEOM_TYPES)
-#include <Engine/Base/PlatformCompat.h>
-#endif
 
 
 // number of key ids reserved (in KeyNames.h)

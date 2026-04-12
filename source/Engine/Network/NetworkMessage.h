@@ -128,9 +128,7 @@ public:
   /* Read an object from message. */
   inline CNetworkMessage &operator>>(float  &f) { Read(&f,  sizeof(f)); return *this;}
   inline CNetworkMessage &operator>>(double &d) { Read(&d,  sizeof(d)); return *this; }
-#ifndef PLATFORM_UNIX
   inline CNetworkMessage &operator>>(int &n) { Read(&n, sizeof(n)); NTOHL(n); return *this; }
-#endif
   inline CNetworkMessage &operator>>(ULONG &ul) { Read(&ul, sizeof(ul)); NTOHL(ul);  return *this; }
   inline CNetworkMessage &operator>>(ULONG64 &ul) { Read(&ul, sizeof(ul)); NTOHULL(ul);  return *this; }
   inline CNetworkMessage &operator>>(UWORD &uw) { Read(&uw, sizeof(uw)); NTOHS(uw); return *this; }
@@ -254,9 +252,6 @@ public:
  */
 class CNetworkStream {
 public:
-#ifdef PLATFORM_UNIX
-#undef R_OK
-#endif
   enum Result {
     R_OK = 1,
     R_BLOCKMISSING,           // block is missing in the stream

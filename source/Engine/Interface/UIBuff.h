@@ -12,7 +12,7 @@
 
 #include <Engine/Interface/UIWindow.h>
 #include <Engine/Effect/CEffectGroupManager.h>
-#include <Engine/Effect/CEffectGroup.h>
+#include <Engine/Effect/CEffectGroup.h >
 #include <Engine/Effect/TimerItem.h>
 #include <Engine/Interface/UICommon.h>
 

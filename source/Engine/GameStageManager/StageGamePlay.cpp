@@ -17,7 +17,7 @@
 #include <Engine/Contents/Base/PetStash.h>
 #include <Engine/Contents/Base/Notice.h>
 #include <Engine/Contents/Base/Party.h>
-#include <Engine/Contents/function/SystemMenuUI.h>
+#include <engine/Contents/function/SystemMenuUI.h>
 #include <Engine/Contents/Base/UIExpedition.h>
 #include <Engine/Info/MyInfo.h>
 #include <Engine/Interface/UINpcScroll.h>

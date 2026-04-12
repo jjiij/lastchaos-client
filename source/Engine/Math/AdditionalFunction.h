@@ -13,14 +13,10 @@
 #include <float.h>
 inline bool IsNormalFloat(FLOAT fVal)
 {
-#ifdef PLATFORM_UNIX
-  return isfinite(fVal);
-#else
-  return (_fpclass(fVal) == 0x0008 /* negative normal */
-       || _fpclass(fVal) == 0x0020 /* -0 */
-       || _fpclass(fVal) == 0x0040 /* +0 */
-       || _fpclass(fVal) == 0x0100); /* positive normal */
-#endif
+	return (_fpclass(fVal) == 0x0008	/* negative normal */
+		 || _fpclass(fVal) == 0x0020	/* -0 */
+		 || _fpclass(fVal) == 0x0040	/* +0 */
+		 || _fpclass(fVal) == 0x0100);	/* positive normal */
 }
 
 inline FLOAT3D Lerp(const FLOAT3D &x0, const FLOAT3D &x1, FLOAT fRatio)

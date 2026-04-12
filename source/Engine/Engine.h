@@ -14,9 +14,7 @@
 #pragma warning(disable : 4200)
 
 #include <stdlib.h>
-#if defined(_WIN32) || defined(_WIN64)
 #include <malloc.h>
-#endif
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -25,9 +23,6 @@
 #include <math.h>
 #include <search.h>   // for qsort
 #include <float.h>    // for FPU control
-#if !defined(_WIN32) && !defined(_WIN64)
-#include <Engine/Base/PlatformCompat.h>
-#endif
 
 /* rcg10042001 !!! FIXME: Move these somewhere. */
 #if (defined PLATFORM_WIN32)

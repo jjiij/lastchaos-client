@@ -6,8 +6,8 @@
 
 #include <Engine/LocalDefine.h>
 #include <Engine/Help/LoadLod.h>
-#include <Common/header/def_option.h>
-#include <Common/header/def_title.h>
+#include <common/header/def_option.h>
+#include <common/header/def_title.h>
 #include <vector>
 
 #define		OPTION_STR_UP				0		// Èû »ó½Â

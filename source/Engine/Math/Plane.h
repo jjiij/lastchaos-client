@@ -91,7 +91,7 @@ inline Plane<Type, iDimensions>::Plane(const Vector<Type, iDimensions> &normal, 
   : Vector<Type, iDimensions>(normal)
 {
   // normalize normal vector
-  ((Vector<Type, iDimensions>)*this).Normalize();
+  Normalize();
   pl_distance = (*this)%point;   // distance = normalized_normal * point (dot product)
 }
 

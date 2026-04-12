@@ -22,15 +22,7 @@
 
 //강동민 수정 시작
 // NOTE : RenderOneSkaModelToTexture()를 위해서 필요한 부분.  나중에 제거할것.
-#ifdef PLATFORM_WIN32
 #include <d3dx9.h>
-#else
-typedef struct { float x; float y; } D3DXVECTOR2;
-typedef struct { float x; float y; float z; } D3DXVECTOR3;
-typedef struct { float x; float y; float z; float w; } D3DXVECTOR4;
-typedef D3DMATRIX D3DXMATRIX;
-typedef void* LPD3DXBUFFER;
-#endif
 //###
 
 #define SHADOWTEXTURESIZE (256)

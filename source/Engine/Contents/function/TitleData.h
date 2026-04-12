@@ -3,8 +3,8 @@
 
 #include <Engine/LocalDefine.h>
 #include <Engine/Help/LoadLod.h>
-#include <Common/header/def_title.h>
-#include <Common/Packet/ptype_old_do_title.h>
+#include <common/header/def_title.h>
+#include <common/Packet/ptype_old_do_title.h>
 #include <vector>
 #include <Engine/Util.h>
 
@@ -128,8 +128,8 @@ public:
 template <typename T>
 static void ReleaseForVector(std::vector<T> releseVec)
 {
-	typename std::vector<T>::iterator iter;
-	typename std::vector<T>::iterator iter_end;
+	std::vector<T>::iterator iter;
+	std::vector<T>::iterator iter_end;
 
 	iter = releseVec.begin();
 	iter_end = releseVec.end();

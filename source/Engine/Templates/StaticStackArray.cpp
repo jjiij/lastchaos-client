@@ -101,7 +101,7 @@ inline void CStaticStackArray<Type>::Add(const Type& t)
 	sa_UsedCount++;
 	if (sa_UsedCount > CStaticArray<Type>::Count())
 	{
-		this->Expand(CStaticArray<Type>::Count() + sa_ctAllocationStep+1);
+		Expand(CStaticArray<Type>::Count() + sa_ctAllocationStep+1);
 	}
 	ASSERT(sa_UsedCount <= CStaticArray<Type>::Count());
 	CStaticArray<Type>::operator [](sa_UsedCount-1) = t;
@@ -121,9 +121,9 @@ inline void CStaticStackArray<Type>::SwapAndPop(INDEX swapIndex)	//스택 중간과 t
 {
 	ASSERT(sa_UsedCount>swapIndex && swapIndex >= 0);
 	--sa_UsedCount;
-	Type t = this->sa_Array[swapIndex];
-	this->sa_Array[swapIndex] = this->sa_Array[sa_UsedCount];
-	this->sa_Array[sa_UsedCount] = t;
+	Type t = sa_Array[swapIndex];
+	sa_Array[swapIndex] = sa_Array[sa_UsedCount];
+	sa_Array[sa_UsedCount] = t;
 }
 //안태훈 수정 끝	//(5th Closed beta)(0.2)
 // modified by rumist [12/10/2010 rumist]
@@ -132,10 +132,10 @@ inline Type* CStaticStackArray<Type>::SwapAndPopEx(INDEX swapIndex)	//스택 중간�
 {
 	ASSERT(sa_UsedCount>swapIndex && swapIndex >= 0);
 	--sa_UsedCount;
-	Type t = this->sa_Array[swapIndex];
-	this->sa_Array[swapIndex] = this->sa_Array[sa_UsedCount];
-	this->sa_Array[sa_UsedCount] = t;
-	return &this->sa_Array[swapIndex];
+	Type t = sa_Array[swapIndex];
+	sa_Array[swapIndex] = sa_Array[sa_UsedCount];
+	sa_Array[sa_UsedCount] = t;
+	return &sa_Array[swapIndex];
 }
 //
 
