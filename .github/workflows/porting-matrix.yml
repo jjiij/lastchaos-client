@@ -23,5 +23,5 @@ jobs:
       - uses: actions/checkout@v4
       - name: Configure
         run: cmake -S . -B build\win64 -G "Visual Studio 17 2022" -A x64
-      - name: Build probes (Windows baseline)
-        run: cmake --build build\win64 --config Release --target lastchaos_porting_probe lastchaos_login_check
+      - name: Build GameMP
+        run: cmake --build build\win64 --config Release --target GameMP

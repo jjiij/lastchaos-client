@@ -190,7 +190,6 @@ Prevent macOS work from breaking existing Windows/Linux flows.
 - Set `nksp_probe` strict link mode to default-ON on macOS (permissive unresolved-link mode now explicit opt-out) and aligned matrix validation defaults with strict enforcement.
 - Added GitHub Actions matrix workflow (`.github/workflows/porting-matrix.yml`) to run Linux x64 probe targets and Windows x64 `GameMP` baseline for each push/PR.
 - Added `scripts/validate_macos_bundle.sh` host-side validation/report workflow for signed bundle checks (Intel + Apple Silicon), including arch/signing/Gatekeeper/data-config checks and optional login smoke command capture.
-- Wired external asset-repo distribution packaging (`jjiij/lastchaos-client-assets`) for Windows/Linux/macOS with platform-specific Windows-payload stripping and native runtime replacement hooks.
 
 ## Immediate Next Tasks (remaining actionable backlog)
 

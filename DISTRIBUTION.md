@@ -47,8 +47,3 @@ Archives are written under `build/dist/archives/`.
 - macOS (universal launcher/app path)
 
 Each job uploads an archive artifact (`lastchaos-<platform>-distribution`).
-
-
-## GitHub Releases publishing
-
-`distribution-matrix.yml` now also publishes a rolling prerelease tagged `nightly` on pushes to `main`/`master`, attaching Linux, Windows, and macOS distribution archives so artifacts appear under GitHub Releases in addition to Actions artifacts.

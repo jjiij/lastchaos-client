@@ -44,9 +44,9 @@ jobs:
       - name: Configure Windows baseline
         shell: bash
         run: cmake -S . -B build/win64 -G "Visual Studio 17 2022" -A x64
-      - name: Build Windows baseline probes
+      - name: Build Windows baseline
         shell: bash
-        run: cmake --build build/win64 --config Release --target lastchaos_porting_probe lastchaos_login_check
+        run: cmake --build build/win64 --config Release --target GameMP
       - name: Stage Windows distribution
         shell: bash
         run: |
@@ -68,9 +68,9 @@ jobs:
           repository: jjiij/lastchaos-client-assets
           path: assets
       - name: Configure macOS launcher target
-        run: cmake -S . -B build/macos -G "Unix Makefiles" -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+        run: cmake -S . -B build/macos-dist -G "Unix Makefiles" -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
       - name: Build macOS launcher binary
-        run: cmake --build build/macos --target lastchaos_login_check -j "$(sysctl -n hw.ncpu)"
+        run: cmake --build build/macos-dist --target lastchaos_login_check -j "$(sysctl -n hw.ncpu)"
       - name: Build minimal macOS app bundle
         run: ./scripts/build_macos_app.sh
       - name: Stage macOS distribution
@@ -84,25 +84,3 @@ jobs:
         with:
           name: lastchaos-macos-distribution
           path: build/dist/archives/lastchaos-macos.*
-
-
-  publish-release:
-    runs-on: ubuntu-24.04
-    needs: [dist-linux, dist-windows, dist-macos]
-    if: github.event_name == "push" && (github.ref_name == "main" || github.ref_name == "master")
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          path: release-artifacts
-      - name: Publish rolling release assets
-        uses: ncipollo/release-action@v1
-        with:
-          tag: nightly
-          name: Nightly Distribution Bundles
-          allowUpdates: true
-          removeArtifacts: true
-          replacesArtifacts: true
-          prerelease: true
-          artifacts: "release-artifacts/**/lastchaos-*.zip,release-artifacts/**/lastchaos-*.tar.gz"

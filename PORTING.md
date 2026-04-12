@@ -65,8 +65,3 @@ Use the host-side validator after packaging to capture signing/runtime evidence 
 ```
 
 On Intel and Apple Silicon hosts this writes `build/macos/bundle_validation_<arch>.txt` and checks bundle archs, signing, Gatekeeper assessment, and bundled login/data inputs. Optional login smoke can be attached with `LASTCHAOS_RUN_LOGIN_SMOKE=1` and `LASTCHAOS_LOGIN_SMOKE_CMD`.
-
-
-## Distribution bundles with external assets
-
-Cross-platform distribution staging (Windows/Linux/macOS) is documented in `DISTRIBUTION.md` and implemented by `scripts/build_distribution_bundle.sh`, which consumes the external assets repository `jjiij/lastchaos-client-assets` and applies platform-specific runtime replacement rules.
