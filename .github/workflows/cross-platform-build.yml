@@ -96,7 +96,17 @@ jobs:
           New-Item -ItemType Directory -Path "Bin/x64" -Force | Out-Null
           New-Item -ItemType Directory -Path "dist" -Force | Out-Null
 
+      - name: Cache Boost
+        id: cache-boost
+        uses: actions/cache@v4
+        with:
+          path: |
+            _deps/boost_1_84_0
+            _deps/boost_1_84_0.zip
+          key: ${{ runner.os }}-boost-1_84_0-msvc142-${{ matrix.platform }}-v1
+
       - name: Build Boost Dependencies
+        if: steps.cache-boost.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
           $boostUnderscore = "1_84_0"
@@ -131,10 +141,35 @@ jobs:
             Pop-Location
           }
 
+      - name: Export Boost Paths
+        shell: pwsh
+        run: |
+          $boostDir = "_deps/boost_1_84_0"
+          $boostLibDir = "$boostDir/stage/lib"
+          if (!(Test-Path "$boostDir/boost/thread.hpp")) { throw "Boost headers missing: $boostDir" }
+          if (!(Test-Path $boostLibDir)) { throw "Boost libs missing: $boostLibDir" }
+
           $boostInclude = (Resolve-Path $boostDir).Path
-          $boostLib = (Resolve-Path "$boostDir/stage/lib").Path
+          $boostLib = (Resolve-Path $boostLibDir).Path
           "BOOST_INCLUDE=$boostInclude" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "BOOST_LIB=$boostLib" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Install Boost Into Legacy Tool Paths
+        shell: pwsh
+        run: |
+          $boostDir = "_deps/boost_1_84_0"
+          $boostLibDir = "$boostDir/stage/lib"
+          if (!(Test-Path "$boostDir/boost/thread.hpp")) { throw "Boost headers missing: $boostDir" }
+          if (!(Test-Path $boostLibDir)) { throw "Boost libs missing: $boostLibDir" }
+
+          $toolsInclude = "Tools.Win32/Include/boost"
+          New-Item -ItemType Directory -Path $toolsInclude -Force | Out-Null
+          Copy-Item -Path "$boostDir/boost/*" -Destination $toolsInclude -Recurse -Force
+
+          $clientLibDir = if ("${{ matrix.platform }}" -eq "x64") { "Tools.Win32/Libraries/Client/x64" } else { "Tools.Win32/Libraries/Client" }
+          New-Item -ItemType Directory -Path $clientLibDir -Force | Out-Null
+          Copy-Item -Path "$boostLibDir/*.lib" -Destination $clientLibDir -Force
+          Write-Host "Boost installed to $toolsInclude and $clientLibDir"
 
       - name: Build solution
         working-directory: source
