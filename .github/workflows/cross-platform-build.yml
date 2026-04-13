@@ -182,6 +182,40 @@ jobs:
           $clientLibDir = if ("${{ matrix.platform }}" -eq "x64") { "Tools.Win32/Libraries/Client/x64" } else { "Tools.Win32/Libraries/Client" }
           New-Item -ItemType Directory -Path $clientLibDir -Force | Out-Null
           Copy-Item -Path "$boostLibDir/*.lib" -Destination $clientLibDir -Force
+
+          # Normalize Boost library naming for legacy auto-link expectations in this codebase.
+          # Some environments produce vc143 and/or omit the -x64 tag, while project headers expect vc142 + x64.
+          $boostComponents = @("thread", "system", "chrono", "date_time")
+          $archTag = if ("${{ matrix.platform }}" -eq "x64") { "-x64" } else { "" }
+          foreach ($component in $boostComponents) {
+            $expected = "libboost_{0}-vc142-mt{1}-1_84.lib" -f $component, $archTag
+            $expectedPath = Join-Path $clientLibDir $expected
+            if (Test-Path $expectedPath) { continue }
+
+            $pattern = "libboost_{0}-vc(142|143)-mt(-x64)?-1_84\\.lib" -f [regex]::Escape($component)
+            $candidate = Get-ChildItem -Path $clientLibDir -File | Where-Object { $_.Name -match $pattern } | Select-Object -First 1
+            if ($candidate) {
+              Copy-Item -Path $candidate.FullName -Destination $expectedPath -Force
+              Write-Host "Created Boost alias: $expected <- $($candidate.Name)"
+            }
+          }
+
+          # Fail fast with diagnostics if required Boost libs are still missing.
+          $required = @(
+            "libboost_thread-vc142-mt$archTag-1_84.lib",
+            "libboost_system-vc142-mt$archTag-1_84.lib",
+            "libboost_chrono-vc142-mt$archTag-1_84.lib",
+            "libboost_date_time-vc142-mt$archTag-1_84.lib"
+          )
+          $missing = @()
+          foreach ($lib in $required) {
+            if (!(Test-Path (Join-Path $clientLibDir $lib))) { $missing += $lib }
+          }
+          if ($missing.Count -gt 0) {
+            $available = (Get-ChildItem -Path $clientLibDir -Filter "libboost_*.lib" -File | Select-Object -ExpandProperty Name | Sort-Object) -join "`n"
+            throw "Missing required Boost libs in $clientLibDir:`n$($missing -join "`n")`nAvailable boost libs:`n$available"
+          }
+
           Write-Host "Boost installed to $toolsInclude and $clientLibDir"
 
       - name: Install DirectX Headers Into Legacy Tool Paths
