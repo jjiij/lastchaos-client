@@ -167,7 +167,8 @@ jobs:
             if (!(Test-Path $vsDevCmd)) { throw "VsDevCmd not found: $vsDevCmd" }
             $vcArch = if ("${{ matrix.platform }}" -eq "x64") { "x64" } else { "x86" }
 
-            cmd /c "call `"$vsDevCmd`" -arch=$vcArch -host_arch=x64 && b2.exe -q toolset=msvc-14.2 address-model=$addressModel variant=release link=static runtime-link=shared threading=multi --with-thread --with-system --with-chrono --with-date_time stage"
+            # Force VS2022 environment to use the v142 compiler toolchain, then let b2 use generic msvc toolset.
+            cmd /c "call `"$vsDevCmd`" -arch=$vcArch -host_arch=x64 -vcvars_ver=14.2 && b2.exe -q toolset=msvc address-model=$addressModel variant=release link=static runtime-link=shared threading=multi --with-thread --with-system --with-chrono --with-date_time stage"
             if ($LASTEXITCODE -ne 0) { throw "Boost build failed" }
           }
           finally {
