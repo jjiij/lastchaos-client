@@ -213,7 +213,7 @@ jobs:
           }
           if ($missing.Count -gt 0) {
             $available = (Get-ChildItem -Path $clientLibDir -Filter "libboost_*.lib" -File | Select-Object -ExpandProperty Name | Sort-Object) -join "`n"
-            throw "Missing required Boost libs in $clientLibDir:`n$($missing -join "`n")`nAvailable boost libs:`n$available"
+            throw "Missing required Boost libs in ${clientLibDir}:`n$($missing -join "`n")`nAvailable boost libs:`n$available"
           }
 
           Write-Host "Boost installed to $toolsInclude and $clientLibDir"
