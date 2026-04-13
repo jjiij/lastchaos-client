@@ -190,6 +190,7 @@ jobs:
           $dxIncludeDir = "source/External/Include/native/directx"
           if (!(Test-Path "$dxIncludeDir/d3dx9.h")) { throw "DirectX header missing: $dxIncludeDir/d3dx9.h" }
           if (!(Test-Path "$dxIncludeDir/d3dx9math.h")) { throw "DirectX header missing: $dxIncludeDir/d3dx9math.h" }
+          if (!(Test-Path "$dxIncludeDir/_mingw_unicode.h")) { throw "DirectX helper header missing: $dxIncludeDir/_mingw_unicode.h" }
 
           $toolsInclude = "Tools.Win32/Include"
           $dx9Include = "Tools.Win32/Libraries/DX9SDK/Include"
@@ -208,6 +209,17 @@ jobs:
           foreach ($header in $d3dxHeaders) {
             Copy-Item -Path $header.FullName -Destination $dx9Include -Force
           }
+          Copy-Item -Path "$dxIncludeDir/_mingw_unicode.h" -Destination $dx9Include -Force
+
+          # MinGW D3DX headers use WINBOOL, but this MSVC setup expects BOOL.
+          # Normalize after copy to avoid C2143/C4430 parser errors in d3dx9math.h/.inl.
+          Get-ChildItem -Path $dx9Include -File -Filter "d3dx9*" | ForEach-Object {
+            $content = Get-Content -Path $_.FullName -Raw
+            $patched = [regex]::Replace($content, '\bWINBOOL\b', 'BOOL')
+            if ($patched -ne $content) {
+              Set-Content -Path $_.FullName -Value $patched -Encoding utf8
+            }
+          }
 
           $conflicts = Get-ChildItem -Path $toolsInclude -Recurse -File -ErrorAction SilentlyContinue | Where-Object {
             ($_.Name -match '^(d3d|dx)') -and ($_.Name -notlike "d3dx9*")
@@ -217,7 +229,7 @@ jobs:
             throw "Conflicting DirectX headers remain in ${toolsInclude}:`n$sample"
           }
 
-          Write-Host "Installed $($d3dxHeaders.Count) D3DX9 headers to $dx9Include"
+          Write-Host "Installed $($d3dxHeaders.Count) D3DX9 headers (+ _mingw_unicode.h) to $dx9Include"
 
       - name: Build solution
         working-directory: source
