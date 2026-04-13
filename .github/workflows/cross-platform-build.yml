@@ -140,7 +140,9 @@ jobs:
         working-directory: source
         shell: cmd
         run: |
-          msbuild LCClient.sln /m /p:Configuration=LCRelease /p:Platform=${{ matrix.platform }} /p:PreferredToolArchitecture=x64 /p:IncludePath=%BOOST_INCLUDE%;$(IncludePath) /p:LibraryPath=%BOOST_LIB%;$(LibraryPath) /t:Common;LCCrypt;CWebPage;Nksp;Shaders;Engine;EntitiesMP;GameMP
+          set INCLUDE=%BOOST_INCLUDE%;%INCLUDE%
+          set LIB=%BOOST_LIB%;%LIB%
+          msbuild LCClient.sln /m /p:Configuration=LCRelease /p:Platform=${{ matrix.platform }} /p:PreferredToolArchitecture=x64 /t:Common;LCCrypt;CWebPage;Nksp;Shaders;Engine;EntitiesMP;GameMP
 
       - name: Create Windows setup bundle
         shell: pwsh
