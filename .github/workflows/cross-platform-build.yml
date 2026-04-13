@@ -236,7 +236,8 @@ jobs:
 
           $env:INCLUDE = "$env:BOOST_INCLUDE;$env:INCLUDE"
           $env:LIB = "$env:BOOST_LIB;$env:LIB"
-          msbuild LCClient.sln /m /p:Configuration=LCRelease /p:Platform=${{ matrix.platform }} /p:PreferredToolArchitecture=x64 /t:Common;LCCrypt;CWebPage;Nksp;Shaders;Engine;EntitiesMP;GameMP
+          $targets = "Common;LCCrypt;CWebPage;Nksp;Shaders;Engine;EntitiesMP;GameMP"
+          msbuild LCClient.sln /m /p:Configuration=LCRelease /p:Platform=${{ matrix.platform }} /p:PreferredToolArchitecture=x64 "/t:$targets"
 
       - name: Create Windows setup bundle
         shell: pwsh
