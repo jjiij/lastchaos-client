@@ -118,19 +118,15 @@ jobs:
         shell: pwsh
         run: |
           $boostLibDir = "_deps/boost_${env:BOOST_UNDERSCORE}/stage/lib"
-          $archTag = if ("${{ matrix.platform }}" -eq "x64") { "-x64" } else { "" }
-          $required = @(
-            "libboost_thread-vc142-mt$archTag-$env:BOOST_LIB_TAG.lib",
-            "libboost_system-vc142-mt$archTag-$env:BOOST_LIB_TAG.lib",
-            "libboost_chrono-vc142-mt$archTag-$env:BOOST_LIB_TAG.lib",
-            "libboost_date_time-vc142-mt$archTag-$env:BOOST_LIB_TAG.lib"
-          )
+          $requiredBase = @("thread", "system", "chrono", "date_time")
           $needsRebuild = $false
           if (!(Test-Path $boostLibDir)) {
             $needsRebuild = $true
           } else {
-            foreach ($lib in $required) {
-              if (!(Test-Path (Join-Path $boostLibDir $lib))) {
+            foreach ($name in $requiredBase) {
+              $withArch = Join-Path $boostLibDir ("libboost_{0}-vc142-mt-x64-{1}.lib" -f $name, $env:BOOST_LIB_TAG)
+              $withoutArch = Join-Path $boostLibDir ("libboost_{0}-vc142-mt-{1}.lib" -f $name, $env:BOOST_LIB_TAG)
+              if (!(Test-Path $withArch) -and !(Test-Path $withoutArch)) {
                 $needsRebuild = $true
                 break
               }
@@ -195,7 +191,33 @@ jobs:
           New-Item -ItemType Directory -Path $clientLibDir -Force | Out-Null
           Copy-Item -Path "$boostLibDir/*.lib" -Destination $clientLibDir -Force
 
-          Write-Host "Boost libraries installed to $clientLibDir"
+          if ("${{ matrix.platform }}" -eq "x64") {
+            # Some b2 layouts emit vc142 libs without the -x64 infix while this client
+            # requests -x64 names via auto-link pragmas. Provide both names.
+            foreach ($name in @("thread", "system", "chrono", "date_time")) {
+              $plain = Join-Path $clientLibDir ("libboost_{0}-vc142-mt-{1}.lib" -f $name, $env:BOOST_LIB_TAG)
+              $arch = Join-Path $clientLibDir ("libboost_{0}-vc142-mt-x64-{1}.lib" -f $name, $env:BOOST_LIB_TAG)
+              if ((Test-Path $plain) -and !(Test-Path $arch)) {
+                Copy-Item -Path $plain -Destination $arch -Force
+              }
+            }
+          }
+
+          $missing = @()
+          foreach ($name in @("thread", "system", "chrono", "date_time")) {
+            $required = if ("${{ matrix.platform }}" -eq "x64") {
+              Join-Path $clientLibDir ("libboost_{0}-vc142-mt-x64-{1}.lib" -f $name, $env:BOOST_LIB_TAG)
+            } else {
+              Join-Path $clientLibDir ("libboost_{0}-vc142-mt-{1}.lib" -f $name, $env:BOOST_LIB_TAG)
+            }
+            if (!(Test-Path $required)) { $missing += $required }
+          }
+          if ($missing.Count -gt 0) {
+            $avail = (Get-ChildItem -Path $clientLibDir -Filter "libboost*.lib" | Select-Object -ExpandProperty Name | Sort-Object) -join "`n"
+            throw "Missing required Boost libs in ${clientLibDir}:`n$($missing -join "`n")`nAvailable boost libs:`n$avail"
+          }
+
+          Write-Host "Boost libraries installed to $clientLibDir with legacy naming compatibility"
 
       - name: Install Legacy D3DX9 Libraries
         shell: pwsh
