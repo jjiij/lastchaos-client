@@ -180,17 +180,50 @@ jobs:
           if (!(Test-Path "$dxIncludeDir/d3dx9math.h")) { throw "DirectX header missing: $dxIncludeDir/d3dx9math.h" }
 
           $toolsInclude = "Tools.Win32/Include"
+          $dx9Include = "Tools.Win32/Libraries/DX9SDK/Include"
           New-Item -ItemType Directory -Path $toolsInclude -Force | Out-Null
-          Copy-Item -Path "$dxIncludeDir/*" -Destination $toolsInclude -Recurse -Force
-          Write-Host "DirectX headers installed to $toolsInclude"
+          New-Item -ItemType Directory -Path $dx9Include -Force | Out-Null
+
+          # Defensive cleanup: remove conflicting DirectX headers under Tools.Win32/Include
+          # so the Windows SDK headers are used for d3d9/d3d11/d3d12.
+          Get-ChildItem -Path $toolsInclude -Recurse -File -ErrorAction SilentlyContinue | Where-Object {
+            ($_.Name -match '^(d3d|dx)') -and ($_.Name -notlike "d3dx9*")
+          } | Remove-Item -Force
+
+          # Install only D3DX9 headers into the legacy DX9 include folder.
+          $d3dxHeaders = Get-ChildItem -Path $dxIncludeDir -Filter "d3dx9*" -File
+          if (-not $d3dxHeaders -or $d3dxHeaders.Count -eq 0) { throw "No d3dx9* headers found in $dxIncludeDir" }
+          foreach ($header in $d3dxHeaders) {
+            Copy-Item -Path $header.FullName -Destination $dx9Include -Force
+          }
+
+          $conflicts = Get-ChildItem -Path $toolsInclude -Recurse -File -ErrorAction SilentlyContinue | Where-Object {
+            ($_.Name -match '^(d3d|dx)') -and ($_.Name -notlike "d3dx9*")
+          }
+          if ($conflicts -and $conflicts.Count -gt 0) {
+            $sample = ($conflicts | Select-Object -First 10 | ForEach-Object { $_.FullName }) -join "`n"
+            throw "Conflicting DirectX headers remain in $toolsInclude:`n$sample"
+          }
+
+          Write-Host "Installed $($d3dxHeaders.Count) D3DX9 headers to $dx9Include"
 
       - name: Build solution
         working-directory: source
-        shell: cmd
+        shell: pwsh
         run: |
-          set INCLUDE=%CD%\External\Include\native\directx;%INCLUDE%
-          set INCLUDE=%BOOST_INCLUDE%;%INCLUDE%
-          set LIB=%BOOST_LIB%;%LIB%
+          $toolsInclude = Join-Path $PWD "..\Tools.Win32\Include"
+          if (Test-Path $toolsInclude) {
+            Get-ChildItem -Path $toolsInclude -Recurse -File -ErrorAction SilentlyContinue | Where-Object {
+              ($_.Name -match '^(d3d|dx)') -and ($_.Name -notlike "d3dx9*")
+            } | Remove-Item -Force
+          }
+
+          if (Test-Path (Join-Path $toolsInclude "d3d9.h")) {
+            throw "Conflicting header still present before msbuild: $toolsInclude\\d3d9.h"
+          }
+
+          $env:INCLUDE = "$env:BOOST_INCLUDE;$env:INCLUDE"
+          $env:LIB = "$env:BOOST_LIB;$env:LIB"
           msbuild LCClient.sln /m /p:Configuration=LCRelease /p:Platform=${{ matrix.platform }} /p:PreferredToolArchitecture=x64 /t:Common;LCCrypt;CWebPage;Nksp;Shaders;Engine;EntitiesMP;GameMP
 
       - name: Create Windows setup bundle
