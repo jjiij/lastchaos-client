@@ -214,7 +214,7 @@ jobs:
           }
           if ($conflicts -and $conflicts.Count -gt 0) {
             $sample = ($conflicts | Select-Object -First 10 | ForEach-Object { $_.FullName }) -join "`n"
-            throw "Conflicting DirectX headers remain in $toolsInclude:`n$sample"
+            throw "Conflicting DirectX headers remain in ${toolsInclude}:`n$sample"
           }
 
           Write-Host "Installed $($d3dxHeaders.Count) D3DX9 headers to $dx9Include"
