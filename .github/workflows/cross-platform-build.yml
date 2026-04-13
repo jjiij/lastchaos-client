@@ -257,6 +257,51 @@ jobs:
 
           Write-Host "Installed $($d3dxHeaders.Count) D3DX9 headers (+ _mingw_unicode.h) to $dx9Include"
 
+      - name: Install Legacy D3DX9 Libraries
+        shell: pwsh
+        run: |
+          $nugetExe = Join-Path $env:RUNNER_TEMP "nuget.exe"
+          if (!(Test-Path $nugetExe)) {
+            Invoke-WebRequest -Uri "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe" -OutFile $nugetExe
+          }
+
+          $nugetOut = "_deps/nuget"
+          New-Item -ItemType Directory -Path $nugetOut -Force | Out-Null
+          & $nugetExe install Microsoft.DXSDK.D3DX -Version 9.29.952.8 -OutputDirectory $nugetOut -Source "https://api.nuget.org/v3/index.json" -NonInteractive -DirectDownload
+          if ($LASTEXITCODE -ne 0) { throw "Failed to install Microsoft.DXSDK.D3DX package" }
+
+          $pkgDir = Get-ChildItem -Path $nugetOut -Directory | Where-Object { $_.Name -like "Microsoft.DXSDK.D3DX*" } | Sort-Object Name -Descending | Select-Object -First 1
+          if (-not $pkgDir) { throw "DXSDK package directory not found in $nugetOut" }
+
+          $d3dx9Libs = Get-ChildItem -Path $pkgDir.FullName -Recurse -Filter "d3dx9.lib" -File
+          if (-not $d3dx9Libs -or $d3dx9Libs.Count -eq 0) { throw "d3dx9.lib not found inside $($pkgDir.FullName)" }
+
+          $dx9LibX64 = "Tools.Win32/Libraries/DX9SDK/Lib/x64"
+          $dx9LibX86 = "Tools.Win32/Libraries/DX9SDK/Lib/x86"
+          New-Item -ItemType Directory -Path $dx9LibX64 -Force | Out-Null
+          New-Item -ItemType Directory -Path $dx9LibX86 -Force | Out-Null
+
+          $copied = 0
+          foreach ($lib in $d3dx9Libs) {
+            $lower = $lib.FullName.ToLowerInvariant()
+            if ($lower -match "(\\\\|/)x64(\\\\|/)") {
+              Copy-Item -Path $lib.FullName -Destination (Join-Path $dx9LibX64 "d3dx9.lib") -Force
+              $copied++
+            } elseif ($lower -match "(\\\\|/)x86(\\\\|/)") {
+              Copy-Item -Path $lib.FullName -Destination (Join-Path $dx9LibX86 "d3dx9.lib") -Force
+              $copied++
+            }
+          }
+
+          # Fallback: if architecture folders weren't encoded in package paths, at least provide x64.
+          if (!(Test-Path (Join-Path $dx9LibX64 "d3dx9.lib"))) {
+            Copy-Item -Path $d3dx9Libs[0].FullName -Destination (Join-Path $dx9LibX64 "d3dx9.lib") -Force
+            $copied++
+          }
+
+          if ($copied -le 0) { throw "Failed to stage d3dx9.lib into Tools.Win32/Libraries/DX9SDK/Lib" }
+          Write-Host "Staged d3dx9.lib to DX9SDK lib folders"
+
       - name: Build solution
         working-directory: source
         shell: pwsh
