@@ -97,17 +97,20 @@ jobs:
           New-Item -ItemType Directory -Path "Bin/x64" -Force | Out-Null
           New-Item -ItemType Directory -Path "dist" -Force | Out-Null
 
-      - name: Cache Boost
-        id: cache-boost
-        uses: actions/cache@v4
+      - name: Restore Boost Cache
+        id: cache-boost-restore
+        uses: actions/cache/restore@v4
         with:
           path: |
             _deps/boost_1_84_0
             _deps/boost_1_84_0.zip
           key: ${{ runner.os }}-boost-1_84_0-msvc142-${{ matrix.platform }}-v1
+          restore-keys: |
+            ${{ runner.os }}-boost-1_84_0-msvc142-${{ matrix.platform }}-
+            ${{ runner.os }}-boost-1_84_0-msvc142-
 
       - name: Build Boost Dependencies
-        if: steps.cache-boost.outputs.cache-hit != 'true'
+        if: steps.cache-boost-restore.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
           $boostUnderscore = "1_84_0"
@@ -141,6 +144,15 @@ jobs:
           finally {
             Pop-Location
           }
+
+      - name: Save Boost Cache
+        if: steps.cache-boost-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            _deps/boost_1_84_0
+            _deps/boost_1_84_0.zip
+          key: ${{ steps.cache-boost-restore.outputs.cache-primary-key }}
 
       - name: Export Boost Paths
         shell: pwsh
