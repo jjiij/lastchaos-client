@@ -263,10 +263,11 @@ jobs:
             "/p:Platform=${{ matrix.platform }}",
             "/p:PreferredToolArchitecture=x64",
             "/p:PlatformToolset=v142",
-            "/p:PreprocessorDefinitions=BOOST_ALL_NO_LIB;%(PreprocessorDefinitions)",
-            "/p:AdditionalDependencies=$boostLibs;%(AdditionalDependencies)",
             "/t:$targets"
           )
+          # Apply Boost link policy via tool environment instead of invalid CLI metadata syntax.
+          $env:CL = "/DBOOST_ALL_NO_LIB $env:CL"
+          $env:LINK = "$boostLibs $env:LINK"
           & msbuild @args
           if ($LASTEXITCODE -ne 0) { throw "Solution build failed" }
 
