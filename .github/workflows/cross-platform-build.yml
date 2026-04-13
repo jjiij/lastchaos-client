@@ -104,13 +104,38 @@ jobs:
           path: |
             _deps/boost_1_84_0
             _deps/boost_1_84_0.zip
-          key: ${{ runner.os }}-boost-1_84_0-msvc142-${{ matrix.platform }}-v1
+          key: ${{ runner.os }}-boost-1_84_0-msvc142-${{ matrix.platform }}-v2
           restore-keys: |
             ${{ runner.os }}-boost-1_84_0-msvc142-${{ matrix.platform }}-
             ${{ runner.os }}-boost-1_84_0-msvc142-
 
+      - name: Validate Boost Cache Contents
+        id: boost-sanity
+        shell: pwsh
+        run: |
+          $boostLibDir = "_deps/boost_1_84_0/stage/lib"
+          $archTag = if ("${{ matrix.platform }}" -eq "x64") { "-x64" } else { "" }
+          $required = @(
+            "libboost_thread-vc142-mt$archTag-1_84.lib",
+            "libboost_system-vc142-mt$archTag-1_84.lib",
+            "libboost_chrono-vc142-mt$archTag-1_84.lib",
+            "libboost_date_time-vc142-mt$archTag-1_84.lib"
+          )
+          $needsRebuild = $false
+          if (!(Test-Path $boostLibDir)) {
+            $needsRebuild = $true
+          } else {
+            foreach ($lib in $required) {
+              if (!(Test-Path (Join-Path $boostLibDir $lib))) {
+                $needsRebuild = $true
+                break
+              }
+            }
+          }
+          "needs_rebuild=$($needsRebuild.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
       - name: Build Boost Dependencies
-        if: steps.cache-boost-restore.outputs.cache-hit != 'true'
+        if: steps.cache-boost-restore.outputs.cache-hit != 'true' || steps.boost-sanity.outputs.needs_rebuild == 'true'
         shell: pwsh
         run: |
           $boostUnderscore = "1_84_0"
@@ -146,7 +171,7 @@ jobs:
           }
 
       - name: Save Boost Cache
-        if: steps.cache-boost-restore.outputs.cache-hit != 'true'
+        if: steps.cache-boost-restore.outputs.cache-hit != 'true' || steps.boost-sanity.outputs.needs_rebuild == 'true'
         uses: actions/cache/save@v4
         with:
           path: |
