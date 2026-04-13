@@ -13,6 +13,7 @@ concurrency:
 jobs:
   build-windows:
     name: Build Windows Bundle (${{ matrix.platform }})
+    if: ${{ matrix.enabled }}
     runs-on: windows-2022
     strategy:
       fail-fast: false
@@ -20,8 +21,10 @@ jobs:
         include:
           - platform: Win32
             suffix: win32
+            enabled: false
           - platform: x64
             suffix: x64
+            enabled: true
 
     steps:
       - name: Checkout
@@ -171,10 +174,23 @@ jobs:
           Copy-Item -Path "$boostLibDir/*.lib" -Destination $clientLibDir -Force
           Write-Host "Boost installed to $toolsInclude and $clientLibDir"
 
+      - name: Install DirectX Headers Into Legacy Tool Paths
+        shell: pwsh
+        run: |
+          $dxIncludeDir = "source/External/Include/native/directx"
+          if (!(Test-Path "$dxIncludeDir/d3dx9.h")) { throw "DirectX header missing: $dxIncludeDir/d3dx9.h" }
+          if (!(Test-Path "$dxIncludeDir/d3dx9math.h")) { throw "DirectX header missing: $dxIncludeDir/d3dx9math.h" }
+
+          $toolsInclude = "Tools.Win32/Include"
+          New-Item -ItemType Directory -Path $toolsInclude -Force | Out-Null
+          Copy-Item -Path "$dxIncludeDir/*" -Destination $toolsInclude -Recurse -Force
+          Write-Host "DirectX headers installed to $toolsInclude"
+
       - name: Build solution
         working-directory: source
         shell: cmd
         run: |
+          set INCLUDE=%CD%\External\Include\native\directx;%INCLUDE%
           set INCLUDE=%BOOST_INCLUDE%;%INCLUDE%
           set LIB=%BOOST_LIB%;%LIB%
           msbuild LCClient.sln /m /p:Configuration=LCRelease /p:Platform=${{ matrix.platform }} /p:PreferredToolArchitecture=x64 /t:Common;LCCrypt;CWebPage;Nksp;Shaders;Engine;EntitiesMP;GameMP
