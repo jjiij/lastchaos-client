@@ -267,7 +267,8 @@ jobs:
           )
           # Apply Boost link policy via tool environment instead of invalid CLI metadata syntax.
           $env:CL = "/DBOOST_ALL_NO_LIB $env:CL"
-          $env:LINK = "$boostLibs $env:LINK"
+          $boostDefaultLibFlags = (($boostLibs -split ';') | ForEach-Object { "/DEFAULTLIB:$_" }) -join ' '
+          $env:LINK = "$boostDefaultLibFlags $env:LINK"
           & msbuild @args
           if ($LASTEXITCODE -ne 0) { throw "Solution build failed" }
 
