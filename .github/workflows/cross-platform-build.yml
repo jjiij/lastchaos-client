@@ -14,6 +14,10 @@ jobs:
   build-windows:
     name: Build Windows Bundle (${{ matrix.platform }})
     runs-on: windows-2022
+    env:
+      BOOST_VERSION: 1.78.0
+      BOOST_UNDERSCORE: 1_78_0
+      BOOST_LIB_TAG: 1_78
     strategy:
       fail-fast: false
       matrix:
@@ -102,24 +106,24 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: |
-            _deps/boost_1_84_0
-            _deps/boost_1_84_0.zip
-          key: ${{ runner.os }}-boost-1_84_0-msvc143-${{ matrix.platform }}-v1
+            _deps/boost_${{ env.BOOST_UNDERSCORE }}
+            _deps/boost_${{ env.BOOST_UNDERSCORE }}.zip
+          key: ${{ runner.os }}-boost-${{ env.BOOST_UNDERSCORE }}-msvc142-${{ matrix.platform }}-v1
           restore-keys: |
-            ${{ runner.os }}-boost-1_84_0-msvc143-${{ matrix.platform }}-
-            ${{ runner.os }}-boost-1_84_0-msvc143-
+            ${{ runner.os }}-boost-${{ env.BOOST_UNDERSCORE }}-msvc142-${{ matrix.platform }}-
+            ${{ runner.os }}-boost-${{ env.BOOST_UNDERSCORE }}-msvc142-
 
       - name: Validate Boost Cache Contents
         id: boost-sanity
         shell: pwsh
         run: |
-          $boostLibDir = "_deps/boost_1_84_0/stage/lib"
+          $boostLibDir = "_deps/boost_${env:BOOST_UNDERSCORE}/stage/lib"
           $archTag = if ("${{ matrix.platform }}" -eq "x64") { "-x64" } else { "" }
           $required = @(
-            "libboost_thread-vc143-mt$archTag-1_84.lib",
-            "libboost_system-vc143-mt$archTag-1_84.lib",
-            "libboost_chrono-vc143-mt$archTag-1_84.lib",
-            "libboost_date_time-vc143-mt$archTag-1_84.lib"
+            "libboost_thread-vc142-mt$archTag-$env:BOOST_LIB_TAG.lib",
+            "libboost_system-vc142-mt$archTag-$env:BOOST_LIB_TAG.lib",
+            "libboost_chrono-vc142-mt$archTag-$env:BOOST_LIB_TAG.lib",
+            "libboost_date_time-vc142-mt$archTag-$env:BOOST_LIB_TAG.lib"
           )
           $needsRebuild = $false
           if (!(Test-Path $boostLibDir)) {
@@ -138,8 +142,8 @@ jobs:
         if: steps.cache-boost-restore.outputs.cache-hit != 'true' || steps.boost-sanity.outputs.needs_rebuild == 'true'
         shell: pwsh
         run: |
-          $boostUnderscore = "1_84_0"
-          $boostVersion = "1.84.0"
+          $boostUnderscore = $env:BOOST_UNDERSCORE
+          $boostVersion = $env:BOOST_VERSION
           $boostDir = "_deps/boost_$boostUnderscore"
           $boostZip = "_deps/boost_$boostUnderscore.zip"
           $boostUrl = "https://archives.boost.io/release/$boostVersion/source/boost_$boostUnderscore.zip"
@@ -163,7 +167,7 @@ jobs:
             if (!(Test-Path $vsDevCmd)) { throw "VsDevCmd not found: $vsDevCmd" }
             $vcArch = if ("${{ matrix.platform }}" -eq "x64") { "x64" } else { "x86" }
 
-            cmd /c "call `"$vsDevCmd`" -arch=$vcArch -host_arch=x64 && b2.exe -q toolset=msvc-14.3 address-model=$addressModel variant=release link=static runtime-link=shared threading=multi --with-thread --with-system --with-chrono --with-date_time stage"
+            cmd /c "call `"$vsDevCmd`" -arch=$vcArch -host_arch=x64 && b2.exe -q toolset=msvc-14.2 address-model=$addressModel variant=release link=static runtime-link=shared threading=multi --with-thread --with-system --with-chrono --with-date_time stage"
             if ($LASTEXITCODE -ne 0) { throw "Boost build failed" }
           }
           finally {
@@ -175,87 +179,22 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: |
-            _deps/boost_1_84_0
-            _deps/boost_1_84_0.zip
+            _deps/boost_${{ env.BOOST_UNDERSCORE }}
+            _deps/boost_${{ env.BOOST_UNDERSCORE }}.zip
           key: ${{ steps.cache-boost-restore.outputs.cache-primary-key }}
-
-      - name: Export Boost Paths
-        shell: pwsh
-        run: |
-          $boostDir = "_deps/boost_1_84_0"
-          $boostLibDir = "$boostDir/stage/lib"
-          if (!(Test-Path "$boostDir/boost/thread.hpp")) { throw "Boost headers missing: $boostDir" }
-          if (!(Test-Path $boostLibDir)) { throw "Boost libs missing: $boostLibDir" }
-
-          $boostInclude = (Resolve-Path $boostDir).Path
-          $boostLib = (Resolve-Path $boostLibDir).Path
-          "BOOST_INCLUDE=$boostInclude" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "BOOST_LIB=$boostLib" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Install Boost Into Legacy Tool Paths
         shell: pwsh
         run: |
-          $boostDir = "_deps/boost_1_84_0"
+          $boostDir = "_deps/boost_$env:BOOST_UNDERSCORE"
           $boostLibDir = "$boostDir/stage/lib"
-          if (!(Test-Path "$boostDir/boost/thread.hpp")) { throw "Boost headers missing: $boostDir" }
           if (!(Test-Path $boostLibDir)) { throw "Boost libs missing: $boostLibDir" }
-
-          $toolsInclude = "Tools.Win32/Include/boost"
-          New-Item -ItemType Directory -Path $toolsInclude -Force | Out-Null
-          Copy-Item -Path "$boostDir/boost/*" -Destination $toolsInclude -Recurse -Force
 
           $clientLibDir = if ("${{ matrix.platform }}" -eq "x64") { "Tools.Win32/Libraries/Client/x64" } else { "Tools.Win32/Libraries/Client" }
           New-Item -ItemType Directory -Path $clientLibDir -Force | Out-Null
           Copy-Item -Path "$boostLibDir/*.lib" -Destination $clientLibDir -Force
 
-          Write-Host "Boost installed to $toolsInclude and $clientLibDir"
-
-      - name: Install DirectX Headers Into Legacy Tool Paths
-        shell: pwsh
-        run: |
-          $dxIncludeDir = "source/External/Include/native/directx"
-          if (!(Test-Path "$dxIncludeDir/d3dx9.h")) { throw "DirectX header missing: $dxIncludeDir/d3dx9.h" }
-          if (!(Test-Path "$dxIncludeDir/d3dx9math.h")) { throw "DirectX header missing: $dxIncludeDir/d3dx9math.h" }
-          if (!(Test-Path "$dxIncludeDir/_mingw_unicode.h")) { throw "DirectX helper header missing: $dxIncludeDir/_mingw_unicode.h" }
-
-          $toolsInclude = "Tools.Win32/Include"
-          $dx9Include = "Tools.Win32/Libraries/DX9SDK/Include"
-          New-Item -ItemType Directory -Path $toolsInclude -Force | Out-Null
-          New-Item -ItemType Directory -Path $dx9Include -Force | Out-Null
-
-          # Defensive cleanup: remove conflicting DirectX headers under Tools.Win32/Include
-          # so the Windows SDK headers are used for d3d9/d3d11/d3d12.
-          Get-ChildItem -Path $toolsInclude -Recurse -File -ErrorAction SilentlyContinue | Where-Object {
-            ($_.Name -match '^(d3d|dx)') -and ($_.Name -notlike "d3dx9*")
-          } | Remove-Item -Force
-
-          # Install only D3DX9 headers into the legacy DX9 include folder.
-          $d3dxHeaders = Get-ChildItem -Path $dxIncludeDir -Filter "d3dx9*" -File
-          if (-not $d3dxHeaders -or $d3dxHeaders.Count -eq 0) { throw "No d3dx9* headers found in $dxIncludeDir" }
-          foreach ($header in $d3dxHeaders) {
-            Copy-Item -Path $header.FullName -Destination $dx9Include -Force
-          }
-          Copy-Item -Path "$dxIncludeDir/_mingw_unicode.h" -Destination $dx9Include -Force
-
-          # MinGW D3DX headers use WINBOOL, but this MSVC setup expects BOOL.
-          # Normalize after copy to avoid C2143/C4430 parser errors in d3dx9math.h/.inl.
-          Get-ChildItem -Path $dx9Include -File -Filter "d3dx9*" | ForEach-Object {
-            $content = Get-Content -Path $_.FullName -Raw
-            $patched = [regex]::Replace($content, '\bWINBOOL\b', 'BOOL')
-            if ($patched -ne $content) {
-              Set-Content -Path $_.FullName -Value $patched -Encoding utf8
-            }
-          }
-
-          $conflicts = Get-ChildItem -Path $toolsInclude -Recurse -File -ErrorAction SilentlyContinue | Where-Object {
-            ($_.Name -match '^(d3d|dx)') -and ($_.Name -notlike "d3dx9*")
-          }
-          if ($conflicts -and $conflicts.Count -gt 0) {
-            $sample = ($conflicts | Select-Object -First 10 | ForEach-Object { $_.FullName }) -join "`n"
-            throw "Conflicting DirectX headers remain in ${toolsInclude}:`n$sample"
-          }
-
-          Write-Host "Installed $($d3dxHeaders.Count) D3DX9 headers (+ _mingw_unicode.h) to $dx9Include"
+          Write-Host "Boost libraries installed to $clientLibDir"
 
       - name: Install Legacy D3DX9 Libraries
         shell: pwsh
@@ -302,6 +241,34 @@ jobs:
           if ($copied -le 0) { throw "Failed to stage d3dx9.lib into Tools.Win32/Libraries/DX9SDK/Lib" }
           Write-Host "Staged d3dx9.lib to DX9SDK lib folders"
 
+      - name: Patch Script Sources For ECC Compatibility
+        shell: pwsh
+        run: |
+          $entitiesDir = "source/EntitiesMP"
+          if (!(Test-Path $entitiesDir)) { throw "Missing directory: $entitiesDir" }
+
+          $esFiles = Get-ChildItem -Path $entitiesDir -Filter "*.es" -File
+          $changed = 0
+          foreach ($file in $esFiles) {
+            $content = Get-Content -Path $file.FullName -Raw
+            $updated = $content
+
+            # Upstream ECC used in CI does not recognize these project-specific features.
+            $updated = $updated -replace '\s*,\s*"HasRaidObject"', ''
+            $updated = $updated -replace '\s*,\s*"RaidEvent"', ''
+            $updated = $updated -replace '\s*,\s*"AlignBackground"', ''
+
+            # Normalize declarations that the current ECC parser cannot handle.
+            $updated = $updated -replace 'zoneflags_ex\s+ZoneBits\s+m_zfZoneFlagBits', 'zoneflags_ex m_zfZoneFlagBits'
+            $updated = $updated -replace 'zoneflags_ex\s+ExtraBits\s+m_efExtraBits', 'zoneflags_ex m_efExtraBits'
+
+            if ($updated -ne $content) {
+              Set-Content -Path $file.FullName -Value $updated -Encoding utf8
+              $changed++
+            }
+          }
+          Write-Host "ECC compatibility patch updated $changed .es files"
+
       - name: Build solution
         working-directory: source
         shell: pwsh
@@ -317,8 +284,6 @@ jobs:
             throw "Conflicting header still present before msbuild: $toolsInclude\\d3d9.h"
           }
 
-          $env:INCLUDE = "$env:BOOST_INCLUDE;$env:INCLUDE"
-          $env:LIB = "$env:BOOST_LIB;$env:LIB"
           $targets = "Common;LCCrypt;CWebPage;Nksp;Shaders;Engine;EntitiesMP;GameMP"
           $args = @(
             "LCClient.sln",
@@ -326,7 +291,7 @@ jobs:
             "/p:Configuration=LCRelease",
             "/p:Platform=${{ matrix.platform }}",
             "/p:PreferredToolArchitecture=x64",
-            "/p:PlatformToolset=v143",
+            "/p:PlatformToolset=v142",
             "/t:$targets"
           )
           & msbuild @args
@@ -346,6 +311,27 @@ jobs:
           New-Item -ItemType Directory -Path $bundleDir -Force | Out-Null
 
           Copy-Item "$bin/*" "$bundleDir/" -Recurse -Force
+
+          # Include LC2018 DXVK runtime support assets from repository root.
+          foreach ($folder in @("Classes", "Shaders")) {
+            if (Test-Path $folder) {
+              Copy-Item -Path $folder -Destination $bundleDir -Recurse -Force
+            }
+          }
+
+          foreach ($file in @("Readme.txt", "ModEXT.txt", "Option_Game.xml.BL.VK", "Option_Game.xml.BLess")) {
+            if (Test-Path $file) {
+              Copy-Item -Path $file -Destination $bundleDir -Force
+            }
+          }
+
+          # LC2018 DXVK note: copy BL.VK menu profile into runtime option path.
+          $optionSrc = "Option_Game.xml.BL.VK"
+          if (Test-Path $optionSrc) {
+            $optionDestDir = Join-Path $bundleDir "Data/Interface/xml"
+            New-Item -ItemType Directory -Path $optionDestDir -Force | Out-Null
+            Copy-Item -Path $optionSrc -Destination (Join-Path $optionDestDir "Option_Game.xml") -Force
+          }
 
           $zipPath = Join-Path $dist "lastchaos-windows-${{ matrix.suffix }}-setup-bundle.zip"
           if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
