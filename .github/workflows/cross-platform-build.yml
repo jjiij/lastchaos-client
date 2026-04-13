@@ -126,7 +126,9 @@ jobs:
             foreach ($name in $requiredBase) {
               $withArch = Join-Path $boostLibDir ("libboost_{0}-vc142-mt-x64-{1}.lib" -f $name, $env:BOOST_LIB_TAG)
               $withoutArch = Join-Path $boostLibDir ("libboost_{0}-vc142-mt-{1}.lib" -f $name, $env:BOOST_LIB_TAG)
-              if (!(Test-Path $withArch) -and !(Test-Path $withoutArch)) {
+              $withArch143 = Join-Path $boostLibDir ("libboost_{0}-vc143-mt-x64-{1}.lib" -f $name, $env:BOOST_LIB_TAG)
+              $withoutArch143 = Join-Path $boostLibDir ("libboost_{0}-vc143-mt-{1}.lib" -f $name, $env:BOOST_LIB_TAG)
+              if (!(Test-Path $withArch) -and !(Test-Path $withoutArch) -and !(Test-Path $withArch143) -and !(Test-Path $withoutArch143)) {
                 $needsRebuild = $true
                 break
               }
@@ -199,6 +201,15 @@ jobs:
               $arch = Join-Path $clientLibDir ("libboost_{0}-vc142-mt-x64-{1}.lib" -f $name, $env:BOOST_LIB_TAG)
               if ((Test-Path $plain) -and !(Test-Path $arch)) {
                 Copy-Item -Path $plain -Destination $arch -Force
+              }
+
+              # If b2 produced vc143-tagged libs, create vc142 aliases expected by the project.
+              $plain143 = Join-Path $clientLibDir ("libboost_{0}-vc143-mt-{1}.lib" -f $name, $env:BOOST_LIB_TAG)
+              $arch143 = Join-Path $clientLibDir ("libboost_{0}-vc143-mt-x64-{1}.lib" -f $name, $env:BOOST_LIB_TAG)
+              if ((Test-Path $arch143) -and !(Test-Path $arch)) {
+                Copy-Item -Path $arch143 -Destination $arch -Force
+              } elseif ((Test-Path $plain143) -and !(Test-Path $arch)) {
+                Copy-Item -Path $plain143 -Destination $arch -Force
               }
             }
           }
