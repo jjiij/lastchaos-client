@@ -104,10 +104,10 @@ jobs:
           path: |
             _deps/boost_1_84_0
             _deps/boost_1_84_0.zip
-          key: ${{ runner.os }}-boost-1_84_0-msvc142-${{ matrix.platform }}-v2
+          key: ${{ runner.os }}-boost-1_84_0-msvc143-${{ matrix.platform }}-v1
           restore-keys: |
-            ${{ runner.os }}-boost-1_84_0-msvc142-${{ matrix.platform }}-
-            ${{ runner.os }}-boost-1_84_0-msvc142-
+            ${{ runner.os }}-boost-1_84_0-msvc143-${{ matrix.platform }}-
+            ${{ runner.os }}-boost-1_84_0-msvc143-
 
       - name: Validate Boost Cache Contents
         id: boost-sanity
@@ -116,10 +116,10 @@ jobs:
           $boostLibDir = "_deps/boost_1_84_0/stage/lib"
           $archTag = if ("${{ matrix.platform }}" -eq "x64") { "-x64" } else { "" }
           $required = @(
-            "libboost_thread-vc142-mt$archTag-1_84.lib",
-            "libboost_system-vc142-mt$archTag-1_84.lib",
-            "libboost_chrono-vc142-mt$archTag-1_84.lib",
-            "libboost_date_time-vc142-mt$archTag-1_84.lib"
+            "libboost_thread-vc143-mt$archTag-1_84.lib",
+            "libboost_system-vc143-mt$archTag-1_84.lib",
+            "libboost_chrono-vc143-mt$archTag-1_84.lib",
+            "libboost_date_time-vc143-mt$archTag-1_84.lib"
           )
           $needsRebuild = $false
           if (!(Test-Path $boostLibDir)) {
@@ -163,7 +163,7 @@ jobs:
             if (!(Test-Path $vsDevCmd)) { throw "VsDevCmd not found: $vsDevCmd" }
             $vcArch = if ("${{ matrix.platform }}" -eq "x64") { "x64" } else { "x86" }
 
-            cmd /c "call `"$vsDevCmd`" -arch=$vcArch -host_arch=x64 -vcvars_ver=14.2 && b2.exe -q toolset=msvc-14.2 address-model=$addressModel variant=release link=static runtime-link=shared threading=multi --with-thread --with-system --with-chrono --with-date_time stage"
+            cmd /c "call `"$vsDevCmd`" -arch=$vcArch -host_arch=x64 && b2.exe -q toolset=msvc-14.3 address-model=$addressModel variant=release link=static runtime-link=shared threading=multi --with-thread --with-system --with-chrono --with-date_time stage"
             if ($LASTEXITCODE -ne 0) { throw "Boost build failed" }
           }
           finally {
@@ -275,25 +275,15 @@ jobs:
           $env:INCLUDE = "$env:BOOST_INCLUDE;$env:INCLUDE"
           $env:LIB = "$env:BOOST_LIB;$env:LIB"
           $targets = "Common;LCCrypt;CWebPage;Nksp;Shaders;Engine;EntitiesMP;GameMP"
-          $boostLibs = if ("${{ matrix.platform }}" -eq "x64") {
-            "libboost_thread-vc142-mt-x64-1_84.lib;libboost_system-vc142-mt-x64-1_84.lib;libboost_chrono-vc142-mt-x64-1_84.lib;libboost_date_time-vc142-mt-x64-1_84.lib"
-          } else {
-            "libboost_thread-vc142-mt-1_84.lib;libboost_system-vc142-mt-1_84.lib;libboost_chrono-vc142-mt-1_84.lib;libboost_date_time-vc142-mt-1_84.lib"
-          }
-
           $args = @(
             "LCClient.sln",
             "/m",
             "/p:Configuration=LCRelease",
             "/p:Platform=${{ matrix.platform }}",
             "/p:PreferredToolArchitecture=x64",
-            "/p:PlatformToolset=v142",
+            "/p:PlatformToolset=v143",
             "/t:$targets"
           )
-          # Apply Boost link policy via tool environment instead of invalid CLI metadata syntax.
-          $env:CL = "/DBOOST_ALL_NO_LIB $env:CL"
-          $boostDefaultLibFlags = (($boostLibs -split ';') | ForEach-Object { "/DEFAULTLIB:$_" }) -join ' '
-          $env:LINK = "$boostDefaultLibFlags $env:LINK"
           & msbuild @args
           if ($LASTEXITCODE -ne 0) { throw "Solution build failed" }
 
