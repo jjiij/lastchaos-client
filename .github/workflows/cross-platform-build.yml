@@ -13,18 +13,16 @@ concurrency:
 jobs:
   build-windows:
     name: Build Windows Bundle (${{ matrix.platform }})
-    if: ${{ matrix.enabled }}
     runs-on: windows-2022
     strategy:
       fail-fast: false
       matrix:
         include:
-          - platform: Win32
-            suffix: win32
-            enabled: false
           - platform: x64
             suffix: x64
-            enabled: true
+          # Keep Win32 definition for later re-enable:
+          # - platform: Win32
+          #   suffix: win32
 
     steps:
       - name: Checkout
