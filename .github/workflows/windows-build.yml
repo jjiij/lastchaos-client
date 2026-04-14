@@ -323,6 +323,14 @@ jobs:
         working-directory: source
         shell: pwsh
         run: |
+          $env:PATH = "$PWD\..\Tools.Win32;$env:PATH"
+          Write-Host "PATH: $env:PATH"
+          Write-Host "ECC location:"
+          Get-Command ecc -ErrorAction SilentlyContinue | Format-List
+          Write-Host "Checking for generated files before build..."
+          Get-ChildItem -Path "EntitiesMP" -Filter "*.cpp" -ErrorAction SilentlyContinue | Select-Object -First 10
+          Get-ChildItem -Path "EntitiesMP" -Filter "*.h" -ErrorAction SilentlyContinue | Select-Object -First 10
+
           $toolsInclude = Join-Path $PWD "..\Tools.Win32\Include"
           if (Test-Path $toolsInclude) {
             Get-ChildItem -Path $toolsInclude -Recurse -File -ErrorAction SilentlyContinue | Where-Object {
