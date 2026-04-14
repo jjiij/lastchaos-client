@@ -307,25 +307,32 @@ jobs:
         working-directory: source/EntitiesMP
         shell: pwsh
         run: |
-          $env:PATH = "$PWD\..\Tools.Win32;$env:PATH"
+          $repoRoot = Split-Path (Split-Path $PWD -Parent) -Parent
+          $eccPath = Join-Path $repoRoot "Tools.Win32"
+          $env:PATH = "$eccPath;$env:PATH"
+          Write-Host "Repo root: $repoRoot"
+          Write-Host "ECC path: $eccPath"
+          Write-Host "PATH contains Tools.Win32: $env:PATH.Contains('Tools.Win32')"
           Write-Host "ECC in PATH: $((Get-Command ecc -ErrorAction SilentlyContinue).Source)"
+          
+          if (-not (Test-Path (Join-Path $eccPath "ecc.exe"))) {
+            throw "ECC.exe not found at $eccPath"
+          }
           
           # Run ECC on all .es files FIRST before C++ compilation
           $esFiles = Get-ChildItem -Filter "*.es"
           Write-Host "Running ECC on $($esFiles.Count) .es files..."
           foreach ($esFile in $esFiles) {
             Write-Host "  Compiling: $($esFile.Name)..."
-            $output = & ecc $esFile.Name 2>&1
+            & ecc $esFile.Name
             if ($LASTEXITCODE -ne 0) {
-              Write-Host "ECC error on $($esFile.Name):"
-              Write-Host $output
               throw "ECC failed on $($esFile.Name)"
             }
           }
           
           Write-Host "ECC compilation complete. Generated files:"
-          Get-ChildItem -Filter "*.cpp" | Select-Object -ExpandProperty Name | Select-Object -First 10
-          Get-ChildItem -Filter "*.h" | Select-Object -ExpandProperty Name | Select-Object -First 10
+          Get-ChildItem -Filter "*.cpp" | Select-Object -First 10
+          Get-ChildItem -Filter "*.h" | Select-Object -First 10
 
       - name: Build solution
         working-directory: source
