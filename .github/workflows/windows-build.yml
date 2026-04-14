@@ -384,8 +384,21 @@ jobs:
       - name: Create Windows setup bundle
         shell: pwsh
         run: |
-          $bin = "source/Bin"
-          if (!(Test-Path $bin)) { throw "Expected output folder missing: $bin" }
+          # Check for Bin folder in both repo root and source directory
+          $binPaths = @("Bin", "source/Bin", "source/Release")
+          $bin = $null
+          foreach ($path in $binPaths) {
+            if (Test-Path $path) {
+              Write-Host "Found Bin folder at: $path"
+              $bin = $path
+              break
+            }
+          }
+          if (-not $bin) {
+            Write-Host "Available directories in source:"
+            Get-ChildItem -Path "source" -Directory | Select-Object -ExpandProperty Name
+            throw "Bin folder not found. Searched: $($binPaths -join ', ')"
+          }
 
           $dist = "dist"
           New-Item -ItemType Directory -Path $dist -Force | Out-Null
@@ -420,6 +433,9 @@ jobs:
           $zipPath = Join-Path $dist "lastchaos-windows-${{ matrix.suffix }}-setup-bundle.zip"
           if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
           Compress-Archive -Path "$bundleDir/*" -DestinationPath $zipPath -CompressionLevel Optimal
+
+          Write-Host "Bundle created successfully"
+          Get-ChildItem $bundleDir | Select-Object -First 10
 
       - name: Split bundle for GitHub release assets
         shell: pwsh
