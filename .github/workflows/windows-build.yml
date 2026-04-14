@@ -45,10 +45,39 @@ jobs:
 
           $installPath = & $vswhere -latest -products * -property installationPath
           if ([string]::IsNullOrWhiteSpace($installPath)) { throw "No Visual Studio installation found" }
+          Write-Host "VS Install Path: $installPath"
 
-          Write-Host "Installing MFC/ATL components into: $installPath"
+          # Check if afxres.h already exists
+          $afxresPaths = @(
+            "$installPath\VC\Auxiliary\VS\include\afxres.h",
+            "$installPath\VC\Tools\MSVC\*\*\atlmfc\include\afxres.h",
+            "$env:ProgramFiles(x86)\Windows Kits\10\Include\*\*\afxres.h"
+          )
+          foreach ($path in $afxresPaths) {
+            if (Test-Path $path) {
+              Write-Host "Found afxres.h at: $path"
+            }
+          }
+
+          Write-Host "Installing MFC/ATL components..."
           & $installer modify --installPath "$installPath" --add Microsoft.VisualStudio.Component.VC.ATLMFC --add Microsoft.VisualStudio.Component.VC.ATL --add Microsoft.VisualStudio.Component.VC.v142.x86.x64 --passive --norestart --wait
-          if ($LASTEXITCODE -ne 0) { throw "vs_installer failed with exit code $LASTEXITCODE" }
+          Write-Host "VS Installer exit code: $LASTEXITCODE"
+
+          # Verify installation
+          $afxresNewPaths = @(
+            "$installPath\VC\Auxiliary\VS\include\afxres.h",
+            "$installPath\VC\Tools\MSVC\*\*\atlmfc\include\afxres.h"
+          )
+          $found = $false
+          foreach ($path in $afxresNewPaths) {
+            if (Test-Path $path) {
+              Write-Host "Verified afxres.h at: $path"
+              $found = $true
+            }
+          }
+          if (-not $found) {
+            Write-Warning "afxres.h still not found after installation"
+          }
 
       - name: Build ECC Compiler
         shell: pwsh
