@@ -46,10 +46,10 @@ jobs:
           $includeDir = "$installPath\VC\Auxiliary\VS\include"
           if (!(Test-Path $includeDir)) { New-Item -ItemType Directory -Path $includeDir -Force | Out-Null }
 
-          # Download minimal afxres.h
+          # Download afxres.h from Microsoft official samples
           try {
-            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/microsoft/VSSDK-Extensibility-Samples/master/AtlDual/afxres.h" -OutFile "$includeDir\afxres.h" -ErrorAction Stop
-            Write-Host "Downloaded afxres.h from Microsoft samples"
+            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/microsoft/Windows-classic-samples/main/Samples/Win7Samples/winui/tsf/tsfcompart/afxres.h" -OutFile "$includeDir\afxres.h" -ErrorAction Stop
+            Write-Host "Downloaded afxres.h from Microsoft/Windows-classic-samples"
           } catch {
             Write-Host "Download failed, creating minimal afxres.h"
             $content = "#pragma once`n#include <windows.h>`n#include <winresrc.h>`n#define IDABORT 3`n#define IDCANCEL 2`n#define IDCONTINUE 11`n#define IDIGNORE 5`n#define IDNO 7`n#define IDOK 1`n#define IDRETRY 4`n#define IDYES 6`n#define IDCLOSE 8`n#define IDHELP 9`n#define RT_DIALOG 5`n#define RT_STRING 6`n#define RT_FONT 8`n#define RT_ACCELERATOR 9`n#define RT_RCDATA 10`n#define RT_GROUP_CURSOR 12`n#define RT_GROUP_ICON 14`n#define RT_ICON 3`n#define RT_CURSOR 1`n#define RT_BITMAP 2`n#define RT_MENU 4`n"
