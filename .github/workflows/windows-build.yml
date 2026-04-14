@@ -287,37 +287,45 @@ jobs:
             $content = Get-Content -Path $file.FullName -Raw -Encoding UTF8
             $original = $content
 
-            # Show lines containing zoneflags_ex before patching
-            $zoneflagsLines = ($content -split "`n" | Select-String -Pattern "zoneflags_ex" | ForEach-Object { $_.LineNumber.ToString() + ": " + $_.Line.Substring(0, [Math]::Min(80, $_.Line.Length)) })
-            if ($zoneflagsLines) {
-              Write-Host "Found zoneflags_ex in $($file.Name):"
-              $zoneflagsLines | ForEach-Object { Write-Host "  $_" }
-            }
-
             # Upstream ECC used in CI does not recognize these project-specific features.
-            $updated = $updated -replace '\s*,\s*"HasRaidObject"', ''
+            $updated = $content -replace '\s*,\s*"HasRaidObject"', ''
             $updated = $updated -replace '\s*,\s*"RaidEvent"', ''
             $updated = $updated -replace '\s*,\s*"AlignBackground"', ''
 
             # Normalize declarations that the current ECC parser cannot handle.
-            # Remove the ZoneBits/ExtraBits type modifier
             $updated = $updated -replace 'zoneflags_ex\s+ZoneBits\s+m_zf', 'zoneflags_ex m_zf'
             $updated = $updated -replace 'zoneflags_ex\s+ExtraBits\s+m_ef', 'zoneflags_ex m_ef'
-
-            # Show lines containing zoneflags_ex after patching
-            $afterLines = ($updated -split "`n" | Select-String -Pattern "zoneflags_ex" | ForEach-Object { $_.LineNumber.ToString() + ": " + $_.Line.Substring(0, [Math]::Min(80, $_.Line.Length)) })
-            if ($afterLines) {
-              Write-Host "After patch in $($file.Name):"
-              $afterLines | ForEach-Object { Write-Host "  $_" }
-            }
 
             if ($updated -ne $original) {
               Set-Content -Path $file.FullName -Value $updated -Encoding UTF8
               $changed++
-              Write-Host "Patched: $($file.Name)"
             }
           }
           Write-Host "ECC compatibility patch updated $changed .es files"
+
+      - name: Run ECC Pre-Build
+        working-directory: source/EntitiesMP
+        shell: pwsh
+        run: |
+          $env:PATH = "$PWD\..\Tools.Win32;$env:PATH"
+          Write-Host "ECC in PATH: $((Get-Command ecc -ErrorAction SilentlyContinue).Source)"
+          
+          # Run ECC on all .es files FIRST before C++ compilation
+          $esFiles = Get-ChildItem -Filter "*.es"
+          Write-Host "Running ECC on $($esFiles.Count) .es files..."
+          foreach ($esFile in $esFiles) {
+            Write-Host "  Compiling: $($esFile.Name)..."
+            $output = & ecc $esFile.Name 2>&1
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "ECC error on $($esFile.Name):"
+              Write-Host $output
+              throw "ECC failed on $($esFile.Name)"
+            }
+          }
+          
+          Write-Host "ECC compilation complete. Generated files:"
+          Get-ChildItem -Filter "*.cpp" | Select-Object -ExpandProperty Name | Select-Object -First 10
+          Get-ChildItem -Filter "*.h" | Select-Object -ExpandProperty Name | Select-Object -First 10
 
       - name: Build solution
         working-directory: source
