@@ -176,8 +176,8 @@ properties:
 	//206 INDEX	m_nPreHealth = -1,	
 	//235	INDEX m_iZoneMovingFlag "Zone Moving"		= 513,	// Zone Moving
 	236 BOOL    m_bChanging = FALSE,
-	237 zoneflags_ex m_zfZoneFlagBits	= 0,	// Zone Moving Flag
-	238 zoneflags_ex m_efExtraBits		= 0,	// Extra Flag
+	237 INDEX m_zfZoneFlagBits	= 0,	// Zone Moving Flag
+	238 INDEX m_efExtraBits		= 0,	// Extra Flag
 	240 BOOL	m_bPreCreate				"Precreated NPC"	= FALSE,	// �̸� �����Ǿ�� �ϴ� NPC�� ���.
 	245 BOOL	m_bHostageNpc				"Is hostage NPC?"	= FALSE,	// �����ؾ��ϴ� NPC�ΰ�?
 	247 enum EventType	m_EventType			"Event Type"		= EVENT_NONE,
