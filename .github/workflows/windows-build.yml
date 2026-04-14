@@ -35,48 +35,29 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      - name: Install MFC/ATL Components
+      - name: Setup MFC Headers
         shell: pwsh
         run: |
           $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-          $installer = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe"
-          if (!(Test-Path $vswhere)) { throw "vswhere not found: $vswhere" }
-          if (!(Test-Path $installer)) { throw "vs_installer not found: $installer" }
-
           $installPath = & $vswhere -latest -products * -property installationPath
           if ([string]::IsNullOrWhiteSpace($installPath)) { throw "No Visual Studio installation found" }
           Write-Host "VS Install Path: $installPath"
 
-          # Check if afxres.h already exists
-          $afxresPaths = @(
-            "$installPath\VC\Auxiliary\VS\include\afxres.h",
-            "$installPath\VC\Tools\MSVC\*\*\atlmfc\include\afxres.h",
-            "$env:ProgramFiles(x86)\Windows Kits\10\Include\*\*\afxres.h"
-          )
-          foreach ($path in $afxresPaths) {
-            if (Test-Path $path) {
-              Write-Host "Found afxres.h at: $path"
-            }
+          $includeDir = "$installPath\VC\Auxiliary\VS\include"
+          if (!(Test-Path $includeDir)) { New-Item -ItemType Directory -Path $includeDir -Force | Out-Null }
+
+          # Download minimal afxres.h
+          try {
+            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/microsoft/VSSDK-Extensibility-Samples/master/AtlDual/afxres.h" -OutFile "$includeDir\afxres.h" -ErrorAction Stop
+            Write-Host "Downloaded afxres.h from Microsoft samples"
+          } catch {
+            Write-Host "Download failed, creating minimal afxres.h"
+            $content = "#pragma once`n#include <windows.h>`n#include <winresrc.h>`n#define IDABORT 3`n#define IDCANCEL 2`n#define IDCONTINUE 11`n#define IDIGNORE 5`n#define IDNO 7`n#define IDOK 1`n#define IDRETRY 4`n#define IDYES 6`n#define IDCLOSE 8`n#define IDHELP 9`n#define RT_DIALOG 5`n#define RT_STRING 6`n#define RT_FONT 8`n#define RT_ACCELERATOR 9`n#define RT_RCDATA 10`n#define RT_GROUP_CURSOR 12`n#define RT_GROUP_ICON 14`n#define RT_ICON 3`n#define RT_CURSOR 1`n#define RT_BITMAP 2`n#define RT_MENU 4`n"
+            Set-Content -Path "$includeDir\afxres.h" -Value $content -NoNewline
           }
 
-          Write-Host "Installing MFC/ATL components..."
-          & $installer modify --installPath "$installPath" --add Microsoft.VisualStudio.Component.VC.ATLMFC --add Microsoft.VisualStudio.Component.VC.ATL --add Microsoft.VisualStudio.Component.VC.v142.x86.x64 --passive --norestart --wait
-          Write-Host "VS Installer exit code: $LASTEXITCODE"
-
-          # Verify installation
-          $afxresNewPaths = @(
-            "$installPath\VC\Auxiliary\VS\include\afxres.h",
-            "$installPath\VC\Tools\MSVC\*\*\atlmfc\include\afxres.h"
-          )
-          $found = $false
-          foreach ($path in $afxresNewPaths) {
-            if (Test-Path $path) {
-              Write-Host "Verified afxres.h at: $path"
-              $found = $true
-            }
-          }
-          if (-not $found) {
-            Write-Warning "afxres.h still not found after installation"
+          if (Test-Path "$includeDir\afxres.h") {
+            Write-Host "afxres.h ready"
           }
 
       - name: Build ECC Compiler
