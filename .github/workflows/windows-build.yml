@@ -284,8 +284,15 @@ jobs:
           $esFiles = Get-ChildItem -Path $entitiesDir -Filter "*.es" -File
           $changed = 0
           foreach ($file in $esFiles) {
-            $content = Get-Content -Path $file.FullName -Raw
-            $updated = $content
+            $content = Get-Content -Path $file.FullName -Raw -Encoding UTF8
+            $original = $content
+
+            # Show lines containing zoneflags_ex before patching
+            $zoneflagsLines = ($content -split "`n" | Select-String -Pattern "zoneflags_ex" | ForEach-Object { $_.LineNumber.ToString() + ": " + $_.Line.Substring(0, [Math]::Min(80, $_.Line.Length)) })
+            if ($zoneflagsLines) {
+              Write-Host "Found zoneflags_ex in $($file.Name):"
+              $zoneflagsLines | ForEach-Object { Write-Host "  $_" }
+            }
 
             # Upstream ECC used in CI does not recognize these project-specific features.
             $updated = $updated -replace '\s*,\s*"HasRaidObject"', ''
@@ -293,12 +300,21 @@ jobs:
             $updated = $updated -replace '\s*,\s*"AlignBackground"', ''
 
             # Normalize declarations that the current ECC parser cannot handle.
-            $updated = $updated -replace 'zoneflags_ex\s+ZoneBits\s+m_zfZoneFlagBits', 'zoneflags_ex m_zfZoneFlagBits'
-            $updated = $updated -replace 'zoneflags_ex\s+ExtraBits\s+m_efExtraBits', 'zoneflags_ex m_efExtraBits'
+            # Remove the ZoneBits/ExtraBits type modifier
+            $updated = $updated -replace 'zoneflags_ex\s+ZoneBits\s+m_zf', 'zoneflags_ex m_zf'
+            $updated = $updated -replace 'zoneflags_ex\s+ExtraBits\s+m_ef', 'zoneflags_ex m_ef'
 
-            if ($updated -ne $content) {
-              Set-Content -Path $file.FullName -Value $updated -Encoding utf8
+            # Show lines containing zoneflags_ex after patching
+            $afterLines = ($updated -split "`n" | Select-String -Pattern "zoneflags_ex" | ForEach-Object { $_.LineNumber.ToString() + ": " + $_.Line.Substring(0, [Math]::Min(80, $_.Line.Length)) })
+            if ($afterLines) {
+              Write-Host "After patch in $($file.Name):"
+              $afterLines | ForEach-Object { Write-Host "  $_" }
+            }
+
+            if ($updated -ne $original) {
+              Set-Content -Path $file.FullName -Value $updated -Encoding UTF8
               $changed++
+              Write-Host "Patched: $($file.Name)"
             }
           }
           Write-Host "ECC compatibility patch updated $changed .es files"
