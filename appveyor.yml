@@ -28,11 +28,14 @@ build_script:
       $eccDir = "_deps/ecc"
       if (Test-Path $eccDir) { Remove-Item -Recurse -Force $eccDir }
 
+      Write-Host "Cloning ECC from GitHub..."
       git clone --depth 1 https://github.com/Serious-Engine/Ecc.git $eccDir
       if ($LASTEXITCODE -ne 0) { throw "Failed to clone Serious-Engine/Ecc" }
 
+      Write-Host "Patching Ecc.vcxproj for v142 toolset..."
       (Get-Content "$eccDir/Ecc.vcxproj" -Raw).Replace("<PlatformToolset>v120</PlatformToolset>", "<PlatformToolset>v142</PlatformToolset>") | Set-Content "$eccDir/Ecc.vcxproj" -Encoding utf8
 
+      Write-Host "Building ECC compiler..."
       msbuild "$eccDir/Ecc.vcxproj" /m /t:Build /p:Configuration=Release /p:Platform=Win32 /p:PreferredToolArchitecture=x64 /p:PlatformToolset=v142
       if ($LASTEXITCODE -ne 0) { throw "Failed to build ECC compiler" }
 
@@ -40,14 +43,16 @@ build_script:
       $candidates = @("$eccDir/Release/Ecc.exe", "$eccDir/x64/Release/Ecc.exe", "$eccDir/Win32/Release/Ecc.exe")
       foreach ($candidate in $candidates) { if (Test-Path $candidate) { $found = $candidate; break } }
       if (-not $found) {
+        Write-Host "Searching for Ecc.exe..."
         $discovered = Get-ChildItem -Path $eccDir -Filter "Ecc.exe" -Recurse | Select-Object -First 1
         if ($discovered) { $found = $discovered.FullName }
       }
       if (-not $found) { throw "Built ECC executable not found" }
+      Write-Host "Found ECC at: $found"
 
       New-Item -ItemType Directory -Path "Tools.Win32" -Force | Out-Null
       Copy-Item -Path $found -Destination "Tools.Win32/ecc.exe" -Force
-      Write-Host "Using ECC: Tools.Win32/ecc.exe"
+      Write-Host "Using ECC: Tools.Win32/ecc.exe (size: $((Get-Item 'Tools.Win32/ecc.exe').Length) bytes)"
 
   - ps: |
       # Prepare Output Dirs
@@ -97,15 +102,21 @@ build_script:
 
   - ps: |
       # Install D3DX9 Libraries
-      $nugetExe = Join-Path $env:RUNNER_TEMP "nuget.exe"
-      if (!(Test-Path $nugetExe)) { Invoke-WebRequest -Uri "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe" -OutFile $nugetExe }
+      $nugetDir = "_deps/nuget_exe"
+      $nugetExe = "$nugetDir/nuget.exe"
+      if (!(Test-Path $nugetExe)) {
+        New-Item -ItemType Directory -Path $nugetDir -Force | Out-Null
+        Invoke-WebRequest -Uri "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe" -OutFile $nugetExe
+      }
 
       $nugetOut = "_deps/nuget"
       New-Item -ItemType Directory -Path $nugetOut -Force | Out-Null
       & $nugetExe install Microsoft.DXSDK.D3DX -Version 9.29.952.8 -OutputDirectory $nugetOut -Source "https://api.nuget.org/v3/index.json" -NonInteractive -DirectDownload
 
       $pkgDir = Get-ChildItem -Path $nugetOut -Directory | Where-Object { $_.Name -like "Microsoft.DXSDK.D3DX*" } | Sort-Object Name -Descending | Select-Object -First 1
+      if (-not $pkgDir) { throw "D3DX SDK package not found" }
       $d3dx9Libs = Get-ChildItem -Path $pkgDir.FullName -Recurse -Filter "d3dx9.lib" -File
+      if (-not $d3dx9Libs) { throw "d3dx9.lib not found" }
       $dx9LibX64 = "Tools.Win32/Libraries/DX9SDK/Lib/x64"
       New-Item -ItemType Directory -Path $dx9LibX64 -Force | Out-Null
       foreach ($lib in $d3dx9Libs) {
@@ -131,12 +142,20 @@ build_script:
 
   - ps: |
       # Run ECC Pre-Build
-      $env:PATH = "Tools.Win32;$env:PATH"
+      Write-Host "Checking for ecc.exe..."
+      if (!(Test-Path "Tools.Win32/ecc.exe")) {
+        Write-Host "ERROR: ecc.exe not found in Tools.Win32"
+        Get-ChildItem -Path "." -Filter "*.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 10
+        throw "ECC executable missing"
+      }
+      $env:PATH = "$PWD/Tools.Win32;$env:PATH"
+      Write-Host "PATH: $env:PATH"
+      Write-Host "ECC location: $PWD/Tools.Win32/ecc.exe"
       Push-Location source/EntitiesMP
       try {
         foreach ($esFile in Get-ChildItem -Filter "*.es") {
           Write-Host "Compiling: $($esFile.Name)"
-          & ecc $esFile.Name
+          & "$PWD/Tools.Win32/ecc.exe" $esFile.Name
           if ($LASTEXITCODE -ne 0) { throw "ECC failed on $($esFile.Name)" }
         }
       }
