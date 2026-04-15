@@ -413,22 +413,6 @@ jobs:
       - name: Create Windows setup bundle
         shell: pwsh
         run: |
-          # Check for Bin folder in both repo root and source directory
-          $binPaths = @("Bin", "source/Bin", "source/Release", "source/Nksp/Release")
-          $bin = $null
-          foreach ($path in $binPaths) {
-            if (Test-Path $path) {
-              Write-Host "Found Bin folder at: $path"
-              $bin = $path
-              break
-            }
-          }
-          if (-not $bin) {
-            Write-Host "Available directories in source:"
-            Get-ChildItem -Path "source" -Directory | Select-Object -ExpandProperty Name
-            throw "Bin folder not found. Searched: $($binPaths -join ', ')"
-          }
-
           $dist = "dist"
           New-Item -ItemType Directory -Path $dist -Force | Out-Null
 
@@ -436,7 +420,26 @@ jobs:
           if (Test-Path $bundleDir) { Remove-Item -Recurse -Force $bundleDir }
           New-Item -ItemType Directory -Path $bundleDir -Force | Out-Null
 
-          Copy-Item "$bin/*" "$bundleDir/" -Recurse -Force
+          # Copy built binaries from Bin folder (DLLs)
+          $binPaths = @("Bin", "source/Bin", "source/Release")
+          foreach ($path in $binPaths) {
+            if (Test-Path $path) {
+              Write-Host "Copying from: $path"
+              Copy-Item "$path/*" "$bundleDir/" -Recurse -Force
+            }
+          }
+
+          # Copy Nksp launcher (nsp.exe)
+          $nkspRelease = "source/Nksp/Release"
+          if (Test-Path $nkspRelease) {
+            Write-Host "Copying Nksp launcher from: $nkspRelease"
+            Copy-Item "$nkspRelease/*" "$bundleDir/" -Recurse -Force
+          }
+
+          # Verify launcher exists
+          $exeFiles = Get-ChildItem -Path $bundleDir -Filter "*.exe" -ErrorAction SilentlyContinue
+          Write-Host "EXE files in bundle:"
+          $exeFiles | Select-Object Name, Length
 
           # Include LC2018 DXVK runtime support assets from repository root.
           foreach ($folder in @("Classes", "Shaders")) {
