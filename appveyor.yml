@@ -142,20 +142,20 @@ build_script:
 
   - ps: |
       # Run ECC Pre-Build
-      Write-Host "Checking for ecc.exe..."
-      if (!(Test-Path "Tools.Win32/ecc.exe")) {
-        Write-Host "ERROR: ecc.exe not found in Tools.Win32"
-        Get-ChildItem -Path "." -Filter "*.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 10
+      $repoRoot = $PWD
+      $eccExe = Join-Path $repoRoot "Tools.Win32/ecc.exe"
+      Write-Host "Checking for ecc.exe at: $eccExe"
+      if (!(Test-Path $eccExe)) {
+        Write-Host "ERROR: ecc.exe not found"
+        Get-ChildItem -Path $repoRoot -Filter "*.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 10
         throw "ECC executable missing"
       }
-      $env:PATH = "$PWD/Tools.Win32;$env:PATH"
-      Write-Host "PATH: $env:PATH"
-      Write-Host "ECC location: $PWD/Tools.Win32/ecc.exe"
+      Write-Host "Using ECC: $eccExe"
       Push-Location source/EntitiesMP
       try {
         foreach ($esFile in Get-ChildItem -Filter "*.es") {
           Write-Host "Compiling: $($esFile.Name)"
-          & "$PWD/Tools.Win32/ecc.exe" $esFile.Name
+          & $eccExe $esFile.Name
           if ($LASTEXITCODE -ne 0) { throw "ECC failed on $($esFile.Name)" }
         }
       }
@@ -163,7 +163,7 @@ build_script:
 
   - ps: |
       # Build Solution
-      $env:PATH = "Tools.Win32;$env:PATH"
+      $env:PATH = "$PWD/Tools.Win32;$env:PATH"
       Push-Location source
       try {
         msbuild LCClient.sln /m /p:Configuration=LCRelease /p:Platform=x64 /p:PreferredToolArchitecture=x64 /p:PlatformToolset=v142 /t:Common;LCCrypt;CWebPage;Nksp;Shaders;Engine;EntitiesMP;GameMP
