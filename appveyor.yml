@@ -127,16 +127,21 @@ build_script:
 
   - ps: |
       # Patch Script Sources For ECC Compatibility
+      # Read and write as bytes to preserve original encoding (Korean CP949)
       $esFiles = Get-ChildItem -Path "source/EntitiesMP" -Filter "*.es" -File
       foreach ($file in $esFiles) {
-        $content = Get-Content -Path $file.FullName -Raw -Encoding UTF8
+        $content = [System.IO.File]::ReadAllText($file.FullName, [System.Text.Encoding]::Default)
         $updated = $content -replace '\s*,\s*"HasRaidObject"', ''
         $updated = $updated -replace '\s*,\s*"RaidEvent"', ''
         $updated = $updated -replace '\s*,\s*"AlignBackground"', ''
         $updated = $updated -replace 'zoneflags_ex\s+ZoneBits\s+m_zf', 'INDEX m_zf'
         $updated = $updated -replace 'zoneflags_ex\s+ExtraBits\s+m_ef', 'INDEX m_ef'
         $updated = $updated -replace 'zoneflags_ex\s+', 'INDEX '
-        if ($updated -ne $content) { Set-Content -Path $file.FullName -Value $updated -Encoding UTF8 }
+        if ($updated -ne $content) {
+          # Use UTF-8 encoding WITHOUT BOM to preserve compatibility
+          $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+          [System.IO.File]::WriteAllText($file.FullName, $updated, $utf8NoBom)
+        }
       }
       Write-Host "ECC compatibility patched"
 
