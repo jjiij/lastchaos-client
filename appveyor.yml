@@ -12,40 +12,16 @@ environment:
 clone_depth: 1
 
 build_script:
-  - cmd: |
-      echo ===== Setup MFC Headers =====
-      "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property installationPath > vs_path.txt
-      set /p VSPATH=<vs_path.txt
-      set INCDIR=%VSPATH%\VC\Auxiliary\VS\include
-      if not exist "%INCDIR%" mkdir "%INCDIR%"
-      (
-        echo #pragma once
-        echo #include ^<windows.h^>
-        echo #include ^<winresrc.h^>
-        echo #define IDABORT 3
-        echo #define IDCANCEL 2
-        echo #define IDCONTINUE 11
-        echo #define IDIGNORE 5
-        echo #define IDNO 7
-        echo #define IDOK 1
-        echo #define IDRETRY 4
-        echo #define IDYES 6
-        echo #define IDCLOSE 8
-        echo #define IDHELP 9
-        echo #define RT_DIALOG 5
-        echo #define RT_STRING 6
-        echo #define RT_FONT 8
-        echo #define RT_ACCELERATOR 9
-        echo #define RT_RCDATA 10
-        echo #define RT_GROUP_CURSOR 12
-        echo #define RT_GROUP_ICON 14
-        echo #define RT_ICON 3
-        echo #define RT_CURSOR 1
-        echo #define RT_BITMAP 2
-        echo #define RT_MENU 4
-      ) > "%INCDIR%\afxres.h"
-      echo afxres.h ready
-      del vs_path.txt
+  - ps: |
+      # Setup MFC Headers (afxres.h)
+      $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+      $installPath = & $vswhere -latest -products * -property installationPath
+      $includeDir = "$installPath\VC\Auxiliary\VS\include"
+      if (!(Test-Path $includeDir)) { New-Item -ItemType Directory -Path $includeDir -Force | Out-Null }
+
+      $content = "#pragma once`n#include <windows.h>`n#include <winresrc.h>`n#define IDABORT 3`n#define IDCANCEL 2`n#define IDCONTINUE 11`n#define IDIGNORE 5`n#define IDNO 7`n#define IDOK 1`n#define IDRETRY 4`n#define IDYES 6`n#define IDCLOSE 8`n#define IDHELP 9`n#define RT_DIALOG 5`n#define RT_STRING 6`n#define RT_FONT 8`n#define RT_ACCELERATOR 9`n#define RT_RCDATA 10`n#define RT_GROUP_CURSOR 12`n#define RT_GROUP_ICON 14`n#define RT_ICON 3`n#define RT_CURSOR 1`n#define RT_BITMAP 2`n#define RT_MENU 4"
+      Set-Content -Path "$includeDir\afxres.h" -Value $content -NoNewline
+      Write-Host "afxres.h ready"
 
   - ps: |
       # Build ECC Compiler
