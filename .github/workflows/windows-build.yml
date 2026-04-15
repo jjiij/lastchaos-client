@@ -517,7 +517,7 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
-      - name: Create GitHub Release and Upload Assets
+      - name: Create GitHub Release
         if: github.event_name == 'workflow_dispatch' || (github.event_name == 'release' && github.event.action == 'published') || (github.event_name == 'push' && github.ref == 'refs/heads/main')
         uses: softprops/action-gh-release@v3
         with:
@@ -525,6 +525,14 @@ jobs:
           draft: ${{ github.event_name == 'workflow_dispatch' }}
           prerelease: true
           generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload split assets to GitHub Release
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'release' && github.event.action == 'published') || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: build-${{ github.run_id }}
           files: |
             dist/lastchaos-windows-${{ matrix.suffix }}-setup-bundle.zip.part*
           fail_on_unmatched_files: true
