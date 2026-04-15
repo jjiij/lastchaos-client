@@ -508,7 +508,7 @@ jobs:
 
       - name: Upload artifact
         if: always() && (github.event_name != 'workflow_run' || needs.build.result == 'success')
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: windows-${{ matrix.suffix }}-bundle-parts
           path: dist/lastchaos-windows-${{ matrix.suffix }}-setup-bundle.zip.part*
@@ -517,7 +517,7 @@ jobs:
 
       - name: Create GitHub Release
         if: github.event_name == 'workflow_dispatch' || (github.event_name == 'release' && github.event.action == 'published') || (github.event_name == 'push' && github.ref == 'refs/heads/main')
-        uses: softprops/action-gh-release@v2.6.1
+        uses: softprops/action-gh-release@v3
         with:
           draft: ${{ github.event_name == 'workflow_dispatch' }}
           prerelease: true
@@ -527,7 +527,7 @@ jobs:
 
       - name: Upload split assets to GitHub Release
         if: github.event_name == 'release' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
-        uses: softprops/action-gh-release@v2.6.1
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             dist/lastchaos-windows-${{ matrix.suffix }}-setup-bundle.zip.part*
