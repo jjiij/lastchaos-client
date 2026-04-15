@@ -458,6 +458,24 @@ jobs:
           Write-Host "EXE files in bundle:"
           $exeFiles | Select-Object Name, Length
 
+          # Download game assets from assets repo
+          Write-Host "Downloading game assets..."
+          $assetsZip = Join-Path $dist "lastchaos-client-assets.zip"
+          $assetsRepo = "https://github.com/jjiij/lastchaos-client-assets/archive/refs/heads/main.zip"
+          try {
+            Invoke-WebRequest -Uri $assetsRepo -OutFile $assetsZip -ErrorAction Stop
+            Write-Host "Extracting assets..."
+            Expand-Archive -Path $assetsZip -DestinationPath $dist -Force
+            $assetsDir = Join-Path $dist "lastchaos-client-assets-main"
+            if (Test-Path $assetsDir) {
+              Write-Host "Copying assets to bundle..."
+              Copy-Item -Path "$assetsDir/*" "$bundleDir/" -Recurse -Force
+              Write-Host "Assets copied successfully"
+            }
+          } catch {
+            Write-Host "WARNING: Failed to download assets: $_"
+          }
+
           # List ALL files that will be packed
           Write-Host "=== Files to be packed ==="
           Get-ChildItem $bundleDir -Recurse -File | Select-Object FullName | ForEach-Object { Write-Host $_.FullName }
