@@ -203,18 +203,72 @@ build_script:
 
   - ps: |
       # Create Bundle
-      $bundleDir = "dist/lastchaos-windows-x64-setup-bundle"
+      $dist = "dist"
+      $bundleDir = "$dist/lastchaos-windows-x64-setup-bundle"
       New-Item -ItemType Directory -Path $bundleDir -Force | Out-Null
-      if (Test-Path "Bin") { Copy-Item "Bin/*" "$bundleDir/" -Recurse -Force }
-      foreach ($folder in @("Classes", "Shaders")) { if (Test-Path $folder) { Copy-Item -Path $folder -Destination $bundleDir -Recurse -Force } }
-      foreach ($file in @("Readme.txt", "ModEXT.txt", "Option_Game.xml.BL.VK", "Option_Game.xml.BLess")) { if (Test-Path $file) { Copy-Item -Path $file -Destination $bundleDir -Force } }
-      if (Test-Path "Option_Game.xml.BL.VK") {
-        $destDir = "$bundleDir/Data/Interface/xml"
-        New-Item -ItemType Directory -Path $destDir -Force | Out-Null
-        Copy-Item "Option_Game.xml.BL.VK" "$destDir/Option_Game.xml" -Force
+
+      # Copy built binaries from Bin folder (DLLs)
+      $binPaths = @("Bin", "source/Bin", "source/Release")
+      foreach ($path in $binPaths) {
+        if (Test-Path $path) {
+          Write-Host "Copying from: $path"
+          Copy-Item "$path/*" "$bundleDir/" -Recurse -Force
+        }
       }
-      Compress-Archive -Path "$bundleDir/*" -DestinationPath "dist/lastchaos-windows-x64-setup-bundle.zip" -Force
-      Write-Host "Bundle created"
+
+      # Copy Nksp launcher (nsp.exe)
+      $nkspRelease = "source/Nksp/Release"
+      if (Test-Path $nkspRelease) {
+        Write-Host "Copying Nksp launcher from: $nkspRelease"
+        Copy-Item "$nkspRelease/*" "$bundleDir/" -Recurse -Force
+      }
+
+      # Include LC2018 DXVK runtime support assets from repository root.
+      foreach ($folder in @("Classes", "Shaders")) {
+        if (Test-Path $folder) {
+          Copy-Item -Path $folder -Destination $bundleDir -Recurse -Force
+        }
+      }
+
+      foreach ($file in @("Readme.txt", "ModEXT.txt", "Option_Game.xml.BL.VK", "Option_Game.xml.BLess")) {
+        if (Test-Path $file) {
+          Copy-Item -Path $file -Destination $bundleDir -Force
+        }
+      }
+
+      # LC2018 DXVK note: copy BL.VK menu profile into runtime option path.
+      $optionSrc = "Option_Game.xml.BL.VK"
+      if (Test-Path $optionSrc) {
+        $optionDestDir = "$bundleDir/Data/Interface/xml"
+        New-Item -ItemType Directory -Path $optionDestDir -Force | Out-Null
+        Copy-Item -Path $optionSrc -Destination "$optionDestDir/Option_Game.xml" -Force
+      }
+
+      # Download game assets from assets repo
+      Write-Host "Downloading game assets..."
+      $assetsZip = "$dist/lastchaos-client-assets.zip"
+      $assetsRepo = "https://github.com/jjiij/lastchaos-client-assets/archive/refs/heads/main.zip"
+      try {
+        Invoke-WebRequest -Uri $assetsRepo -OutFile $assetsZip -ErrorAction Stop
+        Write-Host "Extracting assets..."
+        Expand-Archive -Path $assetsZip -DestinationPath $dist -Force
+        $assetsDir = "$dist/lastchaos-client-assets-main"
+        if (Test-Path $assetsDir) {
+          Write-Host "Copying assets to bundle..."
+          Copy-Item -Path "$assetsDir/*" "$bundleDir/" -Recurse -Force
+          Write-Host "Assets copied successfully"
+        }
+      } catch {
+        Write-Host "WARNING: Failed to download assets: $_"
+      }
+
+      # Show bundle contents
+      Write-Host "Bundle created successfully"
+      $totalSize = (Get-ChildItem $bundleDir -Recurse -File | Measure-Object -Property Length -Sum).Sum
+      Write-Host "Total bundle size: $([math]::Round($totalSize/1MB,2)) MB"
+
+      Compress-Archive -Path "$bundleDir/*" -DestinationPath "$dist/lastchaos-windows-x64-setup-bundle.zip" -Force
+      Write-Host "ZIP archive created"
 
 artifacts:
   - path: dist\lastchaos-windows-x64-setup-bundle.zip
