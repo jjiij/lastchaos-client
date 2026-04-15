@@ -507,7 +507,7 @@ jobs:
           }
 
       - name: Upload artifact
-        if: github.event_name != 'push'
+        if: always() && (github.event_name != 'workflow_run' || needs.build.result == 'success')
         uses: actions/upload-artifact@v4
         with:
           name: windows-${{ matrix.suffix }}-bundle-parts
@@ -516,7 +516,7 @@ jobs:
           retention-days: 1
 
       - name: Create GitHub Release
-        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'release' && github.event.action == 'published')
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'release' && github.event.action == 'published') || (github.event_name == 'push' && github.ref == 'refs/heads/main')
         uses: softprops/action-gh-release@v2
         with:
           draft: ${{ github.event_name == 'workflow_dispatch' }}
@@ -526,7 +526,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload split assets to GitHub Release
-        if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'release' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
         uses: softprops/action-gh-release@v2
         with:
           files: |
