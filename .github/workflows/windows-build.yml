@@ -10,9 +10,6 @@ concurrency:
   group: windows-dist-${{ github.ref }}
   cancel-in-progress: false
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   build-windows:
     name: Build Windows Bundle (${{ matrix.platform }})
@@ -33,10 +30,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
+        uses: microsoft/setup-msbuild@v3
 
       - name: Setup MFC Headers
         shell: pwsh
@@ -116,7 +113,7 @@ jobs:
 
       - name: Restore Boost Cache
         id: cache-boost-restore
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: |
             _deps/boost_${{ env.BOOST_UNDERSCORE }}
@@ -188,7 +185,7 @@ jobs:
 
       - name: Save Boost Cache
         if: steps.cache-boost-restore.outputs.cache-hit != 'true' || steps.boost-sanity.outputs.needs_rebuild == 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: |
             _deps/boost_${{ env.BOOST_UNDERSCORE }}
@@ -511,7 +508,7 @@ jobs:
 
       - name: Upload artifact
         if: always() && (github.event_name != 'workflow_run' || needs.build.result == 'success')
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: windows-${{ matrix.suffix }}-bundle-parts
           path: dist/lastchaos-windows-${{ matrix.suffix }}-setup-bundle.zip.part*
@@ -520,7 +517,7 @@ jobs:
 
       - name: Create GitHub Release
         if: github.event_name == 'workflow_dispatch' || (github.event_name == 'release' && github.event.action == 'published') || (github.event_name == 'push' && github.ref == 'refs/heads/main')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v2.6.1
         with:
           draft: ${{ github.event_name == 'workflow_dispatch' }}
           prerelease: true
@@ -530,7 +527,7 @@ jobs:
 
       - name: Upload split assets to GitHub Release
         if: github.event_name == 'release' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v2.6.1
         with:
           files: |
             dist/lastchaos-windows-${{ matrix.suffix }}-setup-bundle.zip.part*
