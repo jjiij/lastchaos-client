@@ -443,7 +443,14 @@ jobs:
           $nkspRelease = "source/Nksp/Release"
           if (Test-Path $nkspRelease) {
             Write-Host "Copying Nksp launcher from: $nkspRelease"
+            Get-ChildItem -Path $nkspRelease -File | ForEach-Object { Write-Host "  $($_.Name)" }
             Copy-Item "$nkspRelease/*" "$bundleDir/" -Recurse -Force
+          } else {
+            Write-Host "WARNING: Nksp/Release not found!"
+            Write-Host "Checking what exists in source/Nksp:"
+            if (Test-Path "source/Nksp") {
+              Get-ChildItem -Path "source/Nksp" -Directory | ForEach-Object { Write-Host "  $($_.Name)" }
+            }
           }
 
           # Verify launcher exists
@@ -511,31 +518,30 @@ jobs:
           } else {
             Write-Host "Splitting into $([math]::Ceiling($zipSize/$partSizeBytes)) parts..."
             $source = [System.IO.File]::OpenRead($zipPath)
-
-          $source = [System.IO.File]::OpenRead($zipPath)
-          try {
-            while ($source.Position -lt $source.Length) {
-              $partPath = "{0}.part{1:D2}" -f $zipPath, $partIndex
-              $part = [System.IO.File]::Create($partPath)
-              try {
-                $remainingInPart = $partSizeBytes
-                $buffer = New-Object byte[] $bufferSize
-                while ($remainingInPart -gt 0 -and $source.Position -lt $source.Length) {
-                  $toRead = [int][Math]::Min($bufferSize, [Math]::Min($remainingInPart, $source.Length - $source.Position))
-                  $read = $source.Read($buffer, 0, $toRead)
-                  if ($read -le 0) { break }
-                  $part.Write($buffer, 0, $read)
-                  $remainingInPart -= $read
+            try {
+              while ($source.Position -lt $source.Length) {
+                $partPath = "{0}.part{1:D2}" -f $zipPath, $partIndex
+                $part = [System.IO.File]::Create($partPath)
+                try {
+                  $remainingInPart = $partSizeBytes
+                  $buffer = New-Object byte[] $bufferSize
+                  while ($remainingInPart -gt 0 -and $source.Position -lt $source.Length) {
+                    $toRead = [int][Math]::Min($bufferSize, [Math]::Min($remainingInPart, $source.Length - $source.Position))
+                    $read = $source.Read($buffer, 0, $toRead)
+                    if ($read -le 0) { break }
+                    $part.Write($buffer, 0, $read)
+                    $remainingInPart -= $read
+                  }
                 }
+                finally {
+                  $part.Dispose()
+                }
+                $partIndex++
               }
-              finally {
-                $part.Dispose()
-              }
-              $partIndex++
             }
-          }
-          finally {
-            $source.Dispose()
+            finally {
+              $source.Dispose()
+            }
           }
 
           Get-ChildItem -Path "$zipPath.part*" | Sort-Object Name | ForEach-Object {
