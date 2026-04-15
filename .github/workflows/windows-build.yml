@@ -451,6 +451,10 @@ jobs:
           Write-Host "EXE files in bundle:"
           $exeFiles | Select-Object Name, Length
 
+          # List ALL files that will be packed
+          Write-Host "=== Files to be packed ==="
+          Get-ChildItem $bundleDir -Recurse -File | Select-Object FullName | ForEach-Object { Write-Host $_.FullName }
+
           # Include LC2018 DXVK runtime support assets from repository root.
           foreach ($folder in @("Classes", "Shaders")) {
             if (Test-Path $folder) {
