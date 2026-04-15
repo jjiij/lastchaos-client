@@ -169,9 +169,34 @@ build_script:
   - ps: |
       # Build Solution
       $env:PATH = "$PWD/Tools.Win32;$env:PATH"
+      
+      # Determine available Windows SDK version
+      $sdkPath = "${env:ProgramFiles(x86)}\Windows Kits\10\Include"
+      $availableSDK = $null
+      if (Test-Path $sdkPath) {
+        $sdks = Get-ChildItem -Path $sdkPath -Directory | Sort-Object Name -Descending
+        foreach ($sdk in $sdks) {
+          if ($sdk.Name -match '10\.0\.(\d+)\.0') {
+            $availableSDK = $sdk.Name
+            Write-Host "Found Windows SDK: $availableSDK"
+            break
+          }
+        }
+      }
+      
+      # Update project files to use available SDK if needed
+      $targetSDK = if ($availableSDK) { $availableSDK } else { "10.0.19041.0" }
+      Get-ChildItem -Path "source" -Recurse -Filter "*.vcxproj" | ForEach-Object {
+        $content = Get-Content -Path $_.FullName -Raw
+        if ($content -match '<WindowsTargetPlatformVersion>10\.0\.19041\.0</WindowsTargetPlatformVersion>') {
+          $updated = $content -replace '<WindowsTargetPlatformVersion>10\.0\.19041\.0</WindowsTargetPlatformVersion>', "<WindowsTargetPlatformVersion>$targetSDK</WindowsTargetPlatformVersion>"
+          [System.IO.File]::WriteAllText($_.FullName, $updated, [System.Text.UTF8Encoding]::new($false))
+        }
+      }
+      
       Push-Location source
       try {
-        msbuild LCClient.sln /m /p:Configuration=LCRelease /p:Platform=x64 /p:PreferredToolArchitecture=x64 /p:PlatformToolset=v142 /t:Common;LCCrypt;CWebPage;Nksp;Shaders;Engine;EntitiesMP;GameMP
+        msbuild LCClient.sln /m /p:Configuration=LCRelease /p:Platform=x64 /p:PreferredToolArchitecture=x64 /p:PlatformToolset=v142 "/t:Common;LCCrypt;CWebPage;Nksp;Shaders;Engine;EntitiesMP;GameMP"
         if ($LASTEXITCODE -ne 0) { throw "Solution build failed" }
       }
       finally { Pop-Location }
