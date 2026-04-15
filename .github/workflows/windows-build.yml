@@ -519,6 +519,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || (github.event_name == 'release' && github.event.action == 'published') || (github.event_name == 'push' && github.ref == 'refs/heads/main')
         uses: softprops/action-gh-release@v3
         with:
+          tag_name: build-${{ github.run_id }}
           draft: ${{ github.event_name == 'workflow_dispatch' }}
           prerelease: true
           generate_release_notes: true
