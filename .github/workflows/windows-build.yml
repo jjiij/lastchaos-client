@@ -294,7 +294,8 @@ jobs:
           $esFiles = Get-ChildItem -Path $entitiesDir -Filter "*.es" -File
           $changed = 0
           foreach ($file in $esFiles) {
-            $content = Get-Content -Path $file.FullName -Raw -Encoding UTF8
+            # Read using Default encoding (system codepage) to handle Korean CP949 characters
+            $content = [System.IO.File]::ReadAllText($file.FullName, [System.Text.Encoding]::Default)
             $original = $content
 
             # Upstream ECC used in CI does not recognize these project-specific features.
@@ -308,7 +309,9 @@ jobs:
             $updated = $updated -replace 'zoneflags_ex\s+', 'INDEX '
 
             if ($updated -ne $original) {
-              Set-Content -Path $file.FullName -Value $updated -Encoding UTF8
+              # Write without BOM to avoid ECC parser issues
+              $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+              [System.IO.File]::WriteAllText($file.FullName, $updated, $utf8NoBom)
               $changed++
             }
           }
@@ -366,6 +369,30 @@ jobs:
 
           if (Test-Path (Join-Path $toolsInclude "d3d9.h")) {
             throw "Conflicting header still present before msbuild: $toolsInclude\\d3d9.h"
+          }
+
+          # Determine available Windows SDK version and update project files
+          $sdkPath = "${env:ProgramFiles(x86)}\Windows Kits\10\Include"
+          $availableSDK = $null
+          if (Test-Path $sdkPath) {
+            $sdks = Get-ChildItem -Path $sdkPath -Directory | Sort-Object Name -Descending
+            foreach ($sdk in $sdks) {
+              if ($sdk.Name -match '10\.0\.(\d+)\.0') {
+                $availableSDK = $sdk.Name
+                Write-Host "Found Windows SDK: $availableSDK"
+                break
+              }
+            }
+          }
+
+          # Update project files to use available SDK if needed
+          $targetSDK = if ($availableSDK) { $availableSDK } else { "10.0.19041.0" }
+          Get-ChildItem -Path "." -Recurse -Filter "*.vcxproj" | ForEach-Object {
+            $content = Get-Content -Path $_.FullName -Raw
+            if ($content -match '<WindowsTargetPlatformVersion>10\.0\.19041\.0</WindowsTargetPlatformVersion>') {
+              $updated = $content -replace '<WindowsTargetPlatformVersion>10\.0\.19041\.0</WindowsTargetPlatformVersion>', "<WindowsTargetPlatformVersion>$targetSDK</WindowsTargetPlatformVersion>"
+              [System.IO.File]::WriteAllText($_.FullName, $updated, [System.Text.UTF8Encoding]::new($false))
+            }
           }
 
           $targets = "Common;LCCrypt;CWebPage;Nksp;Shaders;Engine;EntitiesMP;GameMP"
@@ -489,10 +516,10 @@ jobs:
           retention-days: 1
 
       - name: Create GitHub Release
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'release' && github.event.action == 'published')
         uses: softprops/action-gh-release@v2
         with:
-          draft: true
+          draft: ${{ github.event_name == 'workflow_dispatch' }}
           prerelease: true
           generate_release_notes: true
         env:
