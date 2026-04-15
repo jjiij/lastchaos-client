@@ -410,6 +410,16 @@ jobs:
           & msbuild @args
           if ($LASTEXITCODE -ne 0) { throw "Solution build failed" }
 
+          # Debug: Show what was built
+          Write-Host "=== Build output in Bin/ ==="
+          if (Test-Path "Bin") {
+            Get-ChildItem -Path "Bin" -Recurse -File | Select-Object FullName, Length | Format-Table
+          }
+          Write-Host "=== Build output in source/Nksp/Release/ ==="
+          if (Test-Path "source/Nksp/Release") {
+            Get-ChildItem -Path "source/Nksp/Release" -Recurse -File | Select-Object FullName, Length | Format-Table
+          }
+
       - name: Create Windows setup bundle
         shell: pwsh
         run: |
@@ -467,7 +477,12 @@ jobs:
           Compress-Archive -Path "$bundleDir/*" -DestinationPath $zipPath -CompressionLevel Optimal
 
           Write-Host "Bundle created successfully"
-          Get-ChildItem $bundleDir | Select-Object -First 10
+          Write-Host "=== Bundle contents ==="
+          Get-ChildItem $bundleDir -Recurse -File | Sort-Object Length -Descending | Select-Object FullName, @{N="SizeMB";E={[math]::Round($_.Length/1MB,2)}} | Format-Table -AutoSize
+
+          # Show total size
+          $totalSize = (Get-ChildItem $bundleDir -Recurse -File | Measure-Object -Property Length -Sum).Sum
+          Write-Host "Total bundle size: $([math]::Round($totalSize/1MB,2)) MB"
 
       - name: Split bundle for GitHub release assets
         shell: pwsh
@@ -476,10 +491,22 @@ jobs:
           $zipPath = Join-Path $dist "lastchaos-windows-${{ matrix.suffix }}-setup-bundle.zip"
           if (!(Test-Path $zipPath)) { throw "Expected ZIP missing: $zipPath" }
 
-          # Keep each release asset below GitHub's per-file size limit.
+          $zipSize = (Get-Item $zipPath).Length
+          Write-Host "ZIP file size: $([math]::Round($zipSize/1MB,2)) MB"
+
+          # Keep each release asset below GitHub's 2GB limit
           $partSizeBytes = 1900MB
           $bufferSize = 4MB
           $partIndex = 1
+
+          # If ZIP is smaller than part size, no split needed - just use original
+          if ($zipSize -le $partSizeBytes) {
+            Write-Host "ZIP is smaller than part size, copying as-is"
+            Copy-Item -Path $zipPath -Destination "$zipPath.part01" -Force
+            Write-Host "Created: lastchaos-windows-${{ matrix.suffix }}-setup-bundle.zip.part01"
+          } else {
+            Write-Host "Splitting into $([math]::Ceiling($zipSize/$partSizeBytes)) parts..."
+            $source = [System.IO.File]::OpenRead($zipPath)
 
           $source = [System.IO.File]::OpenRead($zipPath)
           try {
