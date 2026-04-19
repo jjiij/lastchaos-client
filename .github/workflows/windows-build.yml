@@ -147,8 +147,13 @@ jobs:
               $updated = $content -replace '<WindowsTargetPlatformVersion>10\.0\.19041\.0</WindowsTargetPlatformVersion>', "<WindowsTargetPlatformVersion>$targetSDK</WindowsTargetPlatformVersion>"
               [System.IO.File]::WriteAllText($_.FullName, $updated, [System.Text.UTF8Encoding]::new($false))
             }
+            if ($content -match '<TargetPlatformVersion>wdf</TargetPlatformVersion>') {
+              $updated = $content -replace '<TargetPlatformVersion>wdf</TargetPlatformVersion>', "<TargetPlatformVersion></TargetPlatformVersion>"
+              $updated = $updated -replace '<TargetPlatformMinVersion>.*?</TargetPlatformMinVersion>', ""
+              [System.IO.File]::WriteAllText($_.FullName, $updated, [System.Text.UTF8Encoding]::new($false))
+            }
           }
-          msbuild LCClient.sln /m /p:Configuration=LCRelease /p:Platform=x64 /p:PreferredToolArchitecture=x64 /p:PlatformToolset=v142 /t:Common;LCCrypt;CWebPage;Nksp;Shaders;Engine;EntitiesMP;GameMP
+          msbuild LCClient.sln /m /p:Configuration=LCRelease /p:Platform=x64 /p:PreferredToolArchitecture=x64 /p:PlatformToolset=v142
 
       - name: Create Bundle
         shell: pwsh
