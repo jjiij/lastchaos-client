@@ -141,17 +141,26 @@ jobs:
           $env:PATH = "$PWD\..\Tools.Win32;$env:PATH"
           $sdkPath = "${env:ProgramFiles(x86)}\Windows Kits\10\Include"
           $targetSDK = if (Test-Path $sdkPath) { (Get-ChildItem -Path $sdkPath -Directory | Sort-Object Name -Descending | Select-Object -First 1).Name } else { "10.0.19041.0" }
-          Get-ChildItem -Path "." -Recurse -Filter "*.vcxproj" | ForEach-Object {
-            $content = Get-Content -Path $_.FullName -Raw
-            if ($content -match '<WindowsTargetPlatformVersion>10\.0\.19041\.0</WindowsTargetPlatformVersion>') {
-              $updated = $content -replace '<WindowsTargetPlatformVersion>10\.0\.19041\.0</WindowsTargetPlatformVersion>', "<WindowsTargetPlatformVersion>$targetSDK</WindowsTargetPlatformVersion>"
-              [System.IO.File]::WriteAllText($_.FullName, $updated, [System.Text.UTF8Encoding]::new($false))
-            }
-            if ($content -match '<TargetPlatformVersion>wdf</TargetPlatformVersion>') {
-              $updated = $content -replace '<TargetPlatformVersion>wdf</TargetPlatformVersion>', "<TargetPlatformVersion></TargetPlatformVersion>"
-              $updated = $updated -replace '<TargetPlatformMinVersion>.*?</TargetPlatformMinVersion>', ""
-              [System.IO.File]::WriteAllText($_.FullName, $updated, [System.Text.UTF8Encoding]::new($false))
-            }
+          Get-ChildItem -Path "." -Recurse -Include "*.vcxproj","*.vcxproj.metaproj","*.vcproj" | ForEach-Object {
+            try {
+              $content = Get-Content -Path $_.FullName -Raw -ErrorAction Stop
+              $modified = $false
+              if ($content -match '<WindowsTargetPlatformVersion>10\.0\.19041\.0</WindowsTargetPlatformVersion>') {
+                $content = $content -replace '<WindowsTargetPlatformVersion>10\.0\.19041\.0</WindowsTargetPlatformVersion>', "<WindowsTargetPlatformVersion>$targetSDK</WindowsTargetPlatformVersion>"
+                $modified = $true
+              }
+              if ($content -match '<TargetPlatformVersion>\s*wdf\s*</TargetPlatformVersion>') {
+                $content = $content -replace '<TargetPlatformVersion>\s*wdf\s*</TargetPlatformVersion>', "<TargetPlatformVersion></TargetPlatformVersion>"
+                $modified = $true
+              }
+              if ($content -match '<TargetPlatformMinVersion>') {
+                $content = $content -replace '<TargetPlatformMinVersion>[^<]*</TargetPlatformMinVersion>', ""
+                $modified = $true
+              }
+              if ($modified) {
+                [System.IO.File]::WriteAllText($_.FullName, $content, [System.Text.UTF8Encoding]::new($false))
+              }
+            } catch { }
           }
           msbuild LCClient.sln /m /p:Configuration=LCRelease /p:Platform=x64 /p:PreferredToolArchitecture=x64 /p:PlatformToolset=v142
 
